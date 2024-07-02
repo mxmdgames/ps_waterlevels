@@ -120,6 +120,32 @@
             0%, 100% { transform: translate3d(0,-25px,0); }
             50% { transform: translate3d(0,5px,0); }
         }
+        .key {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .key h2 {
+            margin-top: 0;
+        }
+        .key-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .key-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 50%;
+        }
+        .temperature {
+            text-align: center;
+            font-size: 18px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -146,6 +172,16 @@
             </div>
         </div>
         <div id="loading">Loading river data...</div>
+        <div id="temperature" class="temperature"></div>
+        <div class="key">
+            <h2>Safety Key</h2>
+            <div class="key-item"><div class="key-color" style="background-color: #ff0000;"></div>Extremely Low / Unsafe</div>
+            <div class="key-item"><div class="key-color" style="background-color: #ff4500;"></div>Low / Caution</div>
+            <div class="key-item"><div class="key-color" style="background-color: #ffa500;"></div>Medium / Good</div>
+            <div class="key-item"><div class="key-color" style="background-color: #ff8c00;"></div>Medium-High / Very Good</div>
+            <div class="key-item"><div class="key-color" style="background-color: #008000;"></div>High / Excellent</div>
+            <div class="key-item"><div class="key-color" style="background-color: #0000ff;"></div>Extremely High / Caution</div>
+        </div>
         <div class="weather-container">
             <a class="weatherwidget-io" href="https://forecast7.com/en/37d27n107d01/pagosa-springs/?unit=us" data-label_1="PAGOSA SPRINGS" data-label_2="WEATHER" data-theme="original">PAGOSA SPRINGS WEATHER</a>
         </div>
@@ -160,10 +196,12 @@
         const SITE_CODE = '09342500';
 
         async function fetchRiverData() {
-            const url = `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${SITE_CODE}&parameterCd=00060&siteStatus=all`;
+            const url = `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${SITE_CODE}&parameterCd=00060,00010&siteStatus=all`;
             const response = await fetch(url);
             const data = await response.json();
-            return parseFloat(data.value.timeSeries[0].values[0].value[0].value);
+            const flowRate = parseFloat(data.value.timeSeries[0].values[0].value[0].value);
+            const temperature = parseFloat(data.value.timeSeries[1].values[0].value[0].value);
+            return { flowRate, temperature };
         }
 
         function determineSafety(flowRate, activity) {
@@ -186,9 +224,10 @@
 
         async function updateSafetyIndicators() {
             try {
-                const flowRate = await fetchRiverData();
+                const { flowRate, temperature } = await fetchRiverData();
                 updateGauge('tubing', flowRate);
                 updateGauge('kayaking', flowRate);
+                updateTemperature(temperature);
                 document.getElementById('loading').style.display = 'none';
             } catch (error) {
                 console.error('Error fetching river data:', error);
@@ -209,6 +248,11 @@
             gaugeFill.style.backgroundColor = safety.color;
             gaugeValue.textContent = flowRate;
             flowRateElement.innerHTML = `Current flow rate: ${flowRate} cfs<br>${safety.message}`;
+        }
+
+        function updateTemperature(temperature) {
+            const temperatureF = (temperature * 9/5) + 32;
+            document.getElementById('temperature').textContent = `Water Temperature: ${temperatureF.toFixed(1)}°F / ${temperature.toFixed(1)}°C`;
         }
 
         updateSafetyIndicators();
