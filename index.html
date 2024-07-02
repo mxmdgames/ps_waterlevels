@@ -120,6 +120,36 @@
             0%, 100% { transform: translate3d(0,-25px,0); }
             50% { transform: translate3d(0,5px,0); }
         }
+        .legends {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+        }
+        .legend {
+            background-color: rgba(236, 240, 241, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            width: 45%;
+        }
+        .legend h3 {
+            margin-top: 0;
+            text-align: center;
+        }
+        .legend ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .legend li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .legend .color-indicator {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 50%;
+        }
     </style>
 </head>
 <body>
@@ -143,6 +173,16 @@
                     <div id="kayaking-gauge-value" class="gauge-value"></div>
                 </div>
                 <div id="kayaking-flow-rate" class="flow-rate"></div>
+            </div>
+        </div>
+        <div class="legends">
+            <div class="legend">
+                <h3>Tubing Safety Legend</h3>
+                <ul id="tubing-legend"></ul>
+            </div>
+            <div class="legend">
+                <h3>Kayaking/Rafting Safety Legend</h3>
+                <ul id="kayaking-legend"></ul>
             </div>
         </div>
         <div id="loading">Loading river data...</div>
@@ -211,8 +251,44 @@
             flowRateElement.innerHTML = `Current flow rate: ${flowRate} cfs<br>${safety.message}`;
         }
 
-        updateSafetyIndicators();
-        setInterval(updateSafetyIndicators, 900000); // Update every 15 minutes
+        function populateLegends() {
+            const tubingLegend = [
+                { color: '#ff0000', message: 'Too Low (< 30 cfs)' },
+                { color: '#ff4500', message: 'Low: Stay in deep current, watch for rocks (30-89 cfs)' },
+                { color: '#ffa500', message: 'Medium: Ideal for tubing (90-179 cfs)' },
+                { color: '#ff8c00', message: 'High: Exciting, but you may flip! (180-299 cfs)' },
+                { color: '#008000', message: 'Very High: For experienced tubers only (300-399 cfs)' },
+                { color: '#0000ff', message: 'Extreme: Not safe for tubing (400+ cfs)' }
+            ];
+
+            const kayakingLegend = [
+                { color: '#ff0000', message: 'Too low for rafting (< 400 cfs)' },
+                { color: '#ff4500', message: 'Low (400-799 cfs)' },
+                { color: '#ffa500', message: 'Medium (800-1499 cfs)' },
+                { color: '#ff8c00', message: 'Medium/High (1500-2399 cfs)' },
+                { color: '#008000', message: 'High (2400-3599 cfs)' },
+                { color: '#0000ff', message: 'Extreme (3600+ cfs)' }
+            ];
+
+            populateLegend('tubing-legend', tubingLegend);
+            populateLegend('kayaking-legend', kayakingLegend);
+        }
+
+        function populateLegend(elementId, legendData) {
+            const legendElement = document.getElementById(elementId);
+            legendData.forEach(item => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span class="color-indicator" style="background-color: ${item.color};"></span>${item.message}`;
+                legendElement.appendChild(li);
+            });
+        }
+
+        // Call this function after the DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            populateLegends();
+            updateSafetyIndicators();
+            setInterval(updateSafetyIndicators, 900000); // Update every 15 minutes
+        });
     </script>
     <script>
         !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
