@@ -256,11 +256,11 @@
         function determineSafety(flowRate, activity) {
             if (activity === 'tubing') {
                 if (flowRate < 30) return { color: '#ff0000', message: 'Too Low' };
-                if (flowRate < 90) return { color: '#ff4500', message: 'Low: Stay in deep current, watch for rocks' };
-                if (flowRate < 180) return { color: '#ffa500', message: 'Medium: Ideal for tubing' };
-                if (flowRate < 300) return { color: '#ff8c00', message: 'High: Exciting, but you may flip!' };
-                if (flowRate < 400) return { color: '#008000', message: 'Very High: For experienced tubers only' };
-                return { color: '#0000ff', message: 'Extreme: Not safe for tubing' };
+                if (flowRate < 90) return { color: '#ff4500', message: 'Low: watch for rocks' };
+                if (flowRate < 180) return { color: '#ffa500', message: 'Medium: Ideal' };
+                if (flowRate < 300) return { color: '#ff8c00', message: 'High: Exciting, may flip!' };
+                if (flowRate < 400) return { color: '#008000', message: 'Very High: experienced only' };
+                return { color: '#0000ff', message: 'Extreme: Not safe tubing' };
             } else {
                 if (flowRate < 400) return { color: '#ff0000', message: 'Too low for rafting' };
                 if (flowRate < 800) return { color: '#ff4500', message: 'Low' };
