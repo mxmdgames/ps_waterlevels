@@ -6,21 +6,27 @@
     <title>San Juan River Safety Guide</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
+        html, body { 
+            height: 100%; 
+            margin: 0;
+            padding: 0;
+        }
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #f0f0f0;
+            background: radial-gradient(ellipse at center, rgba(255,254,234,1) 0%, rgba(255,254,234,1) 35%, #B7E8EB 100%);
             color: #333;
             line-height: 1.6;
-            margin: 0;
-            padding: 20px;
+            overflow-x: hidden;
         }
         .container {
             max-width: 800px;
-            margin: 0 auto;
-            background-color: white;
+            margin: 20px auto;
+            background-color: rgba(255, 255, 255, 0.8);
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1;
         }
         h1 {
             color: #2c3e50;
@@ -33,7 +39,7 @@
             flex-wrap: wrap;
         }
         .indicator {
-            background-color: #ecf0f1;
+            background-color: rgba(236, 240, 241, 0.8);
             border-radius: 10px;
             padding: 20px;
             margin: 10px;
@@ -84,6 +90,36 @@
         .weather-container {
             margin-top: 30px;
         }
+        .ocean { 
+            height: 5%;
+            width: 100%;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            background: #015871;
+        }
+        .wave {
+            background: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/85486/wave.svg) repeat-x; 
+            position: absolute;
+            top: -198px;
+            width: 6400px;
+            height: 198px;
+            animation: wave 7s cubic-bezier( 0.36, 0.45, 0.63, 0.53) infinite;
+            transform: translate3d(0, 0, 0);
+        }
+        .wave:nth-of-type(2) {
+            top: -175px;
+            animation: wave 7s cubic-bezier( 0.36, 0.45, 0.63, 0.53) -.125s infinite, swell 7s ease -1.25s infinite;
+            opacity: 1;
+        }
+        @keyframes wave {
+            0% { margin-left: 0; }
+            100% { margin-left: -1600px; }
+        }
+        @keyframes swell {
+            0%, 100% { transform: translate3d(0,-25px,0); }
+            50% { transform: translate3d(0,5px,0); }
+        }
     </style>
 </head>
 <body>
@@ -113,6 +149,11 @@
         <div class="weather-container">
             <a class="weatherwidget-io" href="https://forecast7.com/en/37d27n107d01/pagosa-springs/?unit=us" data-label_1="PAGOSA SPRINGS" data-label_2="WEATHER" data-theme="original">PAGOSA SPRINGS WEATHER</a>
         </div>
+    </div>
+
+    <div class="ocean">
+        <div class="wave"></div>
+        <div class="wave"></div>
     </div>
 
     <script>
