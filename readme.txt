@@ -22,6 +22,7 @@ There are two functions to determine safety levels:
 
 - **Tubing Safety (`determineTubingSafety`)**:
     - Below 75 cfs: "Too Low"
+    - 75-199 cfs: "Low"
     - 200-399 cfs: "Good"
     - 400-799 cfs: "Caution"
     - 800-1199 cfs: "High Danger"
@@ -43,7 +44,7 @@ The `updateSafetyIndicators()` function calls `fetchRiverData()`, then uses `det
 
 ### Display
 
-The safety level is displayed in circular indicators on the webpage. The color and message in these indicators change based on the current river conditions.
+The safety level is displayed in gauge-style indicators on the webpage. The color and message in these indicators change based on the current river conditions. An arrow and fill indicate the relative flow rate.
 
 ### Flow Rate Display
 
