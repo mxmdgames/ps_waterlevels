@@ -134,13 +134,15 @@
 
         function determineTubingSafety(flowRate) {
             if (flowRate < 75) {
-                return { color: 'var(--low-color)', message: 'Too Low' };
+                return { color: 'var(--danger-color)', message: 'Too Low' };
+            } else if (flowRate < 200) {
+                return { color: 'var(--low-color)', message: 'Low' };
             } else if (flowRate < 400) {
-                return { color: 'var(--safe-color)', message: 'Ideal' };
+                return { color: 'var(--safe-color)', message: 'Good' };
             } else if (flowRate < 800) {
-                return { color: 'var(--medium-color)', message: 'Good' };
+                return { color: 'var(--medium-color)', message: 'Caution' };
             } else if (flowRate < 1200) {
-                return { color: 'var(--medium-high-color)', message: 'Caution' };
+                return { color: 'var(--medium-high-color)', message: 'High Danger' };
             } else {
                 return { color: 'var(--danger-color)', message: 'Too High' };
             }
