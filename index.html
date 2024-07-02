@@ -116,9 +116,9 @@
             return parseFloat(data.value.timeSeries[0].values[0].value[0].value);
         }
 
-        function determineSafety(flowRate) {
+        function determineRaftingSafety(flowRate) {
             if (flowRate < 400) {
-                return { color: 'var(--danger-color)', message: 'Too low to raft, tubing' };
+                return { color: 'var(--danger-color)', message: 'Too low to raft' };
             } else if (flowRate < 800) {
                 return { color: 'var(--low-color)', message: 'Low' };
             } else if (flowRate < 1500) {
@@ -132,11 +132,25 @@
             }
         }
 
+        function determineTubingSafety(flowRate) {
+            if (flowRate < 200) {
+                return { color: 'var(--low-color)', message: 'Too Low' };
+            } else if (flowRate < 400) {
+                return { color: 'var(--safe-color)', message: 'Ideal' };
+            } else if (flowRate < 800) {
+                return { color: 'var(--medium-color)', message: 'Good' };
+            } else if (flowRate < 1200) {
+                return { color: 'var(--medium-high-color)', message: 'Caution' };
+            } else {
+                return { color: 'var(--danger-color)', message: 'Too High' };
+            }
+        }
+
         async function updateSafetyIndicators() {
             try {
                 const flowRate = await fetchRiverData();
-                const tubingSafety = determineSafety(flowRate);
-                const kayakingSafety = determineSafety(flowRate);
+                const tubingSafety = determineTubingSafety(flowRate);
+                const kayakingSafety = determineRaftingSafety(flowRate);
 
                 updateIndicator('tubing', tubingSafety, flowRate);
                 updateIndicator('kayaking', kayakingSafety, flowRate);
