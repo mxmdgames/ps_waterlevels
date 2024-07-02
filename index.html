@@ -13,8 +13,10 @@
             --extreme-low-color: #ff0000;
             --low-color: #ff4500;
             --medium-color: #ffa500;
+            --medium-high-color: #ff8c00;
             --good-color: #00ff00;
             --high-color: #008000;
+            --extreme-high-color: #0000ff;
         }
         body {
             font-family: 'Roboto', sans-serif;
@@ -65,8 +67,9 @@
                 var(--extreme-low-color) 0deg 36deg,
                 var(--low-color) 36deg 72deg,
                 var(--medium-color) 72deg 108deg,
-                var(--good-color) 108deg 144deg,
-                var(--high-color) 144deg 180deg
+                var(--medium-high-color) 108deg 144deg,
+                var(--high-color) 144deg 180deg,
+                var(--extreme-high-color) 180deg 216deg
             );
         }
         .gauge-cover {
@@ -153,33 +156,33 @@
 
         function determineRaftingSafety(flowRate) {
             if (flowRate < 400) {
-                return { color: 'var(--extreme-low-color)', message: 'Too low to raft' };
+                return { color: 'var(--extreme-low-color)', message: 'Too low to raft, tubing' };
             } else if (flowRate < 800) {
                 return { color: 'var(--low-color)', message: 'Low' };
             } else if (flowRate < 1500) {
                 return { color: 'var(--medium-color)', message: 'Medium' };
             } else if (flowRate < 2400) {
-                return { color: 'var(--good-color)', message: 'Good' };
+                return { color: 'var(--medium-high-color)', message: 'Medium/High' };
             } else if (flowRate < 3600) {
                 return { color: 'var(--high-color)', message: 'High' };
             } else {
-                return { color: 'var(--extreme-low-color)', message: 'Really High' };
+                return { color: 'var(--extreme-high-color)', message: 'Really High' };
             }
         }
 
         function determineTubingSafety(flowRate) {
-            if (flowRate < 75) {
+            if (flowRate < 30) {
                 return { color: 'var(--extreme-low-color)', message: 'Too Low' };
-            } else if (flowRate < 200) {
-                return { color: 'var(--low-color)', message: 'Low' };
+            } else if (flowRate < 90) {
+                return { color: 'var(--low-color)', message: 'Low: stay in the deepest current, lots of rocks to dodge' };
+            } else if (flowRate < 180) {
+                return { color: 'var(--medium-color)', message: 'Medium: our favorite tubing level' };
+            } else if (flowRate < 300) {
+                return { color: 'var(--medium-high-color)', message: 'High: rowdy fun for adventure seekers, you’re gonna flip!' };
             } else if (flowRate < 400) {
-                return { color: 'var(--good-color)', message: 'Good' };
-            } else if (flowRate < 800) {
-                return { color: 'var(--medium-color)', message: 'Caution' };
-            } else if (flowRate < 1200) {
-                return { color: 'var(--high-color)', message: 'High Danger' };
+                return { color: 'var(--high-color)', message: 'High: rowdy fun for adventure seekers, you’re gonna flip!' };
             } else {
-                return { color: 'var(--extreme-low-color)', message: 'Too High' };
+                return { color: 'var(--extreme-high-color)', message: 'Rafting!' };
             }
         }
 
@@ -211,14 +214,14 @@
             gaugeValue.textContent = flowRate;
 
             // Update flow rate text
-            flowRateElement.textContent = `Current flow rate: ${flowRate} cfs`;
+            flowRateElement.textContent = `Current flow rate: ${flowRate} cfs\n${safety.message}`;
         }
 
         function getArrowRotation(activity, flowRate) {
             const maxRotation = 180;
             let maxFlow;
             if (activity === 'tubing') {
-                maxFlow = 1200;
+                maxFlow = 400;
             } else {
                 maxFlow = 3600;
             }
