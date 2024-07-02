@@ -133,7 +133,7 @@
         }
 
         function determineTubingSafety(flowRate) {
-            if (flowRate < 200) {
+            if (flowRate < 75) {
                 return { color: 'var(--low-color)', message: 'Too Low' };
             } else if (flowRate < 400) {
                 return { color: 'var(--safe-color)', message: 'Ideal' };
