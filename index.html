@@ -3,137 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>San Juan River Safety Indicators</title>
+    <title>San Juan River Safety Guide</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #1a73e8;
-            --secondary-color: #f1f3f4;
-            --text-color: #202124;
-            --extreme-low-color: #ff0000;
-            --low-color: #ff4500;
-            --medium-color: #ffa500;
-            --medium-high-color: #ff8c00;
-            --good-color: #00ff00;
-            --high-color: #008000;
-            --extreme-high-color: #0000ff;
-        }
         body {
             font-family: 'Roboto', sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            background-color: #f0f0f0;
+            color: #333;
+            line-height: 1.6;
             margin: 0;
-            background-color: #1c1c1c;
-            color: white;
+            padding: 20px;
         }
         .container {
             max-width: 800px;
-            width: 100%;
-            padding: 20px;
-            box-sizing: border-box;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         h1 {
+            color: #2c3e50;
             text-align: center;
-            color: white;
             margin-bottom: 30px;
         }
-        .indicators {
+        .safety-indicators {
             display: flex;
             justify-content: space-around;
             flex-wrap: wrap;
         }
-        .indicator-container {
-            margin: 20px;
+        .indicator {
+            background-color: #ecf0f1;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px;
             text-align: center;
+            width: 45%;
         }
-        h2 {
-            margin-bottom: 15px;
-            font-size: 1.2rem;
-        }
-        .gauge-container {
+        .gauge {
+            width: 200px;
+            height: 100px;
+            margin: 0 auto;
+            background-color: #bdc3c7;
+            border-radius: 100px 100px 0 0;
             position: relative;
-            width: 300px;
-            height: 150px;
+            overflow: hidden;
         }
-        .gauge-background {
+        .gauge-fill {
             position: absolute;
+            bottom: 0;
             width: 100%;
-            height: 100%;
-            border-radius: 150px 150px 0 0;
-            background: conic-gradient(
-                var(--extreme-low-color) 0deg 36deg,
-                var(--low-color) 36deg 72deg,
-                var(--medium-color) 72deg 108deg,
-                var(--medium-high-color) 108deg 144deg,
-                var(--high-color) 144deg 180deg,
-                var(--extreme-high-color) 180deg 216deg
-            );
+            transition: height 0.5s;
         }
         .gauge-cover {
-            position: absolute;
-            width: 80%;
-            height: 120px;
-            background-color: #1c1c1c;
-            border-radius: 150px 150px 0 0;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-        .gauge-arrow {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            width: 4px;
-            height: 130px;
+            width: 180px;
+            height: 90px;
             background-color: white;
-            transform-origin: bottom;
-            transition: transform 0.3s ease-in-out;
+            border-radius: 90px 90px 0 0;
+            position: absolute;
+            top: 10px;
+            left: 10px;
         }
         .gauge-value {
             position: absolute;
-            bottom: 20px;
+            bottom: 5px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 2.5rem;
+            font-size: 24px;
             font-weight: bold;
         }
         .flow-rate {
             margin-top: 15px;
-            font-size: 0.9rem;
+            font-size: 16px;
         }
         #loading {
             text-align: center;
-            font-size: 1.2rem;
+            font-size: 18px;
             margin-top: 20px;
         }
         .weather-container {
-            margin-top: 20px;
+            margin-top: 30px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>San Juan River Safety Indicators</h1>
-        <div class="indicators">
-            <div class="indicator-container">
+        <h1>San Juan River Safety Guide</h1>
+        <div class="safety-indicators">
+            <div class="indicator">
                 <h2>Tubing Safety</h2>
-                <div class="gauge-container">
-                    <div class="gauge-background"></div>
+                <div class="gauge">
+                    <div id="tubing-gauge-fill" class="gauge-fill"></div>
                     <div class="gauge-cover"></div>
-                    <div id="tubing-gauge-arrow" class="gauge-arrow"></div>
                     <div id="tubing-gauge-value" class="gauge-value"></div>
                 </div>
                 <div id="tubing-flow-rate" class="flow-rate"></div>
             </div>
-            <div class="indicator-container">
+            <div class="indicator">
                 <h2>Kayaking/Rafting Safety</h2>
-                <div class="gauge-container">
-                    <div class="gauge-background"></div>
+                <div class="gauge">
+                    <div id="kayaking-gauge-fill" class="gauge-fill"></div>
                     <div class="gauge-cover"></div>
-                    <div id="kayaking-gauge-arrow" class="gauge-arrow"></div>
                     <div id="kayaking-gauge-value" class="gauge-value"></div>
                 </div>
                 <div id="kayaking-flow-rate" class="flow-rate"></div>
@@ -144,6 +114,7 @@
             <a class="weatherwidget-io" href="https://forecast7.com/en/37d27n107d01/pagosa-springs/?unit=us" data-label_1="PAGOSA SPRINGS" data-label_2="WEATHER" data-theme="original">PAGOSA SPRINGS WEATHER</a>
         </div>
     </div>
+
     <script>
         const SITE_CODE = '09342500';
 
@@ -154,47 +125,29 @@
             return parseFloat(data.value.timeSeries[0].values[0].value[0].value);
         }
 
-        function determineRaftingSafety(flowRate) {
-            if (flowRate < 400) {
-                return { color: 'var(--extreme-low-color)', message: 'Too low to raft, tubing' };
-            } else if (flowRate < 800) {
-                return { color: 'var(--low-color)', message: 'Low' };
-            } else if (flowRate < 1500) {
-                return { color: 'var(--medium-color)', message: 'Medium' };
-            } else if (flowRate < 2400) {
-                return { color: 'var(--medium-high-color)', message: 'Medium/High' };
-            } else if (flowRate < 3600) {
-                return { color: 'var(--high-color)', message: 'High' };
+        function determineSafety(flowRate, activity) {
+            if (activity === 'tubing') {
+                if (flowRate < 30) return { color: '#ff0000', message: 'Too Low' };
+                if (flowRate < 90) return { color: '#ff4500', message: 'Low: Stay in deep current, watch for rocks' };
+                if (flowRate < 180) return { color: '#ffa500', message: 'Medium: Ideal for tubing' };
+                if (flowRate < 300) return { color: '#ff8c00', message: 'High: Exciting, but you may flip!' };
+                if (flowRate < 400) return { color: '#008000', message: 'Very High: For experienced tubers only' };
+                return { color: '#0000ff', message: 'Extreme: Not safe for tubing' };
             } else {
-                return { color: 'var(--extreme-high-color)', message: 'Really High' };
-            }
-        }
-
-        function determineTubingSafety(flowRate) {
-            if (flowRate < 30) {
-                return { color: 'var(--extreme-low-color)', message: 'Too Low' };
-            } else if (flowRate < 90) {
-                return { color: 'var(--low-color)', message: 'Low: stay in the deepest current, lots of rocks to dodge' };
-            } else if (flowRate < 180) {
-                return { color: 'var(--medium-color)', message: 'Medium: our favorite tubing level' };
-            } else if (flowRate < 300) {
-                return { color: 'var(--medium-high-color)', message: 'High: rowdy fun for adventure seekers, you’re gonna flip!' };
-            } else if (flowRate < 400) {
-                return { color: 'var(--high-color)', message: 'High: rowdy fun for adventure seekers, you’re gonna flip!' };
-            } else {
-                return { color: 'var(--extreme-high-color)', message: 'Rafting!' };
+                if (flowRate < 400) return { color: '#ff0000', message: 'Too low for rafting' };
+                if (flowRate < 800) return { color: '#ff4500', message: 'Low' };
+                if (flowRate < 1500) return { color: '#ffa500', message: 'Medium' };
+                if (flowRate < 2400) return { color: '#ff8c00', message: 'Medium/High' };
+                if (flowRate < 3600) return { color: '#008000', message: 'High' };
+                return { color: '#0000ff', message: 'Extreme' };
             }
         }
 
         async function updateSafetyIndicators() {
             try {
                 const flowRate = await fetchRiverData();
-                const tubingSafety = determineTubingSafety(flowRate);
-                const kayakingSafety = determineRaftingSafety(flowRate);
-
-                updateGauge('tubing', tubingSafety, flowRate);
-                updateGauge('kayaking', kayakingSafety, flowRate);
-
+                updateGauge('tubing', flowRate);
+                updateGauge('kayaking', flowRate);
                 document.getElementById('loading').style.display = 'none';
             } catch (error) {
                 console.error('Error fetching river data:', error);
@@ -202,43 +155,26 @@
             }
         }
 
-        function updateGauge(activity, safety, flowRate) {
-            const gaugeArrow = document.getElementById(`${activity}-gauge-arrow`);
+        function updateGauge(activity, flowRate) {
+            const safety = determineSafety(flowRate, activity);
+            const gaugeFill = document.getElementById(`${activity}-gauge-fill`);
             const gaugeValue = document.getElementById(`${activity}-gauge-value`);
             const flowRateElement = document.getElementById(`${activity}-flow-rate`);
 
-            // Update arrow position
-            gaugeArrow.style.transform = `rotate(${getArrowRotation(activity, flowRate)}deg)`;
+            const maxHeight = activity === 'tubing' ? 400 : 3600;
+            const height = Math.min((flowRate / maxHeight) * 100, 100);
 
-            // Update gauge text
+            gaugeFill.style.height = `${height}%`;
+            gaugeFill.style.backgroundColor = safety.color;
             gaugeValue.textContent = flowRate;
-
-            // Update flow rate text
-            flowRateElement.textContent = `Current flow rate: ${flowRate} cfs\n${safety.message}`;
-        }
-
-        function getArrowRotation(activity, flowRate) {
-            const maxRotation = 180;
-            let maxFlow;
-            if (activity === 'tubing') {
-                maxFlow = 400;
-            } else {
-                maxFlow = 3600;
-            }
-            return Math.min((flowRate / maxFlow) * maxRotation, maxRotation);
+            flowRateElement.innerHTML = `Current flow rate: ${flowRate} cfs<br>${safety.message}`;
         }
 
         updateSafetyIndicators();
         setInterval(updateSafetyIndicators, 900000); // Update every 15 minutes
     </script>
     <script>
-        !function(d,s,id){
-            var js,fjs=d.getElementsByTagName(s)[0];
-            if(!d.getElementById(id)){
-                js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';
-                fjs.parentNode.insertBefore(js,fjs);
-            }
-        }(document,'script','weatherwidget-io-js');
+        !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
     </script>
 </body>
 </html>
