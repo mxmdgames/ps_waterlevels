@@ -11,7 +11,10 @@
             --secondary-color: #f1f3f4;
             --text-color: #202124;
             --safe-color: #34a853;
-            --caution-color: #fbbc05;
+            --low-color: #fbbc05;
+            --medium-color: #ffa726;
+            --medium-high-color: #fb8c00;
+            --high-color: #e65100;
             --danger-color: #ea4335;
         }
         body {
@@ -71,6 +74,9 @@
             font-size: 1.2rem;
             margin-top: 20px;
         }
+        .weather-container {
+            margin-top: 20px;
+        }
         @media (max-width: 600px) {
             .safety-indicator {
                 width: 150px;
@@ -96,13 +102,12 @@
             </div>
         </div>
         <div id="loading">Loading river data...</div>
+        <div class="weather-container">
+            <a class="weatherwidget-io" href="https://forecast7.com/en/37d27n107d01/pagosa-springs/?unit=us" data-label_1="PAGOSA SPRINGS" data-label_2="WEATHER" data-theme="original">PAGOSA SPRINGS WEATHER</a>
+        </div>
     </div>
     <script>
         const SITE_CODE = '09342500';
-        const TUBING_SAFE_MIN = 200;
-        const TUBING_SAFE_MAX = 1000;
-        const KAYAK_RAFT_SAFE_MIN = 500;
-        const KAYAK_RAFT_SAFE_MAX = 4000;
 
         async function fetchRiverData() {
             const url = `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${SITE_CODE}&parameterCd=00060&siteStatus=all`;
@@ -111,21 +116,27 @@
             return parseFloat(data.value.timeSeries[0].values[0].value[0].value);
         }
 
-        function determineSafety(flowRate, min, max) {
-            if (flowRate < min) {
-                return { color: 'var(--caution-color)', message: 'Caution: Low Water' };
-            } else if (flowRate > max) {
-                return { color: 'var(--danger-color)', message: 'Danger: High Water' };
+        function determineSafety(flowRate) {
+            if (flowRate < 400) {
+                return { color: 'var(--danger-color)', message: 'Too low to raft, tubing' };
+            } else if (flowRate < 800) {
+                return { color: 'var(--low-color)', message: 'Low' };
+            } else if (flowRate < 1500) {
+                return { color: 'var(--medium-color)', message: 'Medium' };
+            } else if (flowRate < 2400) {
+                return { color: 'var(--medium-high-color)', message: 'Medium/High' };
+            } else if (flowRate < 3600) {
+                return { color: 'var(--high-color)', message: 'High' };
             } else {
-                return { color: 'var(--safe-color)', message: 'Safe for Activity' };
+                return { color: 'var(--danger-color)', message: 'Really High' };
             }
         }
 
         async function updateSafetyIndicators() {
             try {
                 const flowRate = await fetchRiverData();
-                const tubingSafety = determineSafety(flowRate, TUBING_SAFE_MIN, TUBING_SAFE_MAX);
-                const kayakingSafety = determineSafety(flowRate, KAYAK_RAFT_SAFE_MIN, KAYAK_RAFT_SAFE_MAX);
+                const tubingSafety = determineSafety(flowRate);
+                const kayakingSafety = determineSafety(flowRate);
 
                 updateIndicator('tubing', tubingSafety, flowRate);
                 updateIndicator('kayaking', kayakingSafety, flowRate);
@@ -149,9 +160,14 @@
         updateSafetyIndicators();
         setInterval(updateSafetyIndicators, 900000); // Update every 15 minutes
     </script>
-    <a class="weatherwidget-io" href="https://forecast7.com/en/37d27n107d01/pagosa-springs/?unit=us" data-label_1="PAGOSA SPRINGS" data-label_2="WEATHER" data-theme="original" >PAGOSA SPRINGS WEATHER</a>
-<script>
-!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
-</script>
+    <script>
+        !function(d,s,id){
+            var js,fjs=d.getElementsByTagName(s)[0];
+            if(!d.getElementById(id)){
+                js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';
+                fjs.parentNode.insertBefore(js,fjs);
+            }
+        }(document,'script','weatherwidget-io-js');
+    </script>
 </body>
 </html>
