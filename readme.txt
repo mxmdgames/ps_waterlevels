@@ -21,10 +21,10 @@ Once the data is received, it's parsed from JSON format. The code extracts the c
 There are two functions to determine safety levels:
 
 - **Tubing Safety (`determineTubingSafety`)**:
-    - Below 200 cfs: "Too Low"
-    - 200-399 cfs: "Ideal"
-    - 400-799 cfs: "Good"
-    - 800-1199 cfs: "Caution"
+    - Below 75 cfs: "Too Low"
+    - 200-399 cfs: "Good"
+    - 400-799 cfs: "Caution"
+    - 800-1199 cfs: "High Danger"
     - 1200 cfs and above: "Too High"
 
 - **Kayaking/Rafting Safety (`determineRaftingSafety`)**:
