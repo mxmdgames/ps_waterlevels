@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>San Juan River Safety Indicators</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --secondary-color: #f1f3f4;
+            --text-color: #202124;
+            --safe-color: #34a853;
+            --caution-color: #fbbc05;
+            --danger-color: #ea4335;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+        }
+        .indicators {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        .indicator-container {
+            margin: 20px;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        .safety-indicator {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .flow-rate {
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        #loading {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-top: 20px;
+        }
+        @media (max-width: 600px) {
+            .safety-indicator {
+                width: 150px;
+                height: 150px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>San Juan River Safety Indicators</h1>
+        <div class="indicators">
+            <div class="indicator-container">
+                <h2>Tubing Safety</h2>
+                <div id="tubing-indicator" class="safety-indicator"></div>
+                <div id="tubing-flow-rate" class="flow-rate"></div>
+            </div>
+            <div class="indicator-container">
+                <h2>Kayaking/Rafting Safety</h2>
+                <div id="kayaking-indicator" class="safety-indicator"></div>
+                <div id="kayaking-flow-rate" class="flow-rate"></div>
+            </div>
+        </div>
+        <div id="loading">Loading river data...</div>
+    </div>
+    <script>
+        const SITE_CODE = '09342500';
+        const TUBING_SAFE_MIN = 200;
+        const TUBING_SAFE_MAX = 1000;
+        const KAYAK_RAFT_SAFE_MIN = 500;
+        const KAYAK_RAFT_SAFE_MAX = 4000;
+
+        async function fetchRiverData() {
+            const url = `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${SITE_CODE}&parameterCd=00060&siteStatus=all`;
+            const response = await fetch(url);
+            const data = await response.json();
+            return parseFloat(data.value.timeSeries[0].values[0].value[0].value);
+        }
+
+        function determineSafety(flowRate, min, max) {
+            if (flowRate < min) {
+                return { color: 'var(--caution-color)', message: 'Caution: Low Water' };
+            } else if (flowRate > max) {
+                return { color: 'var(--danger-color)', message: 'Danger: High Water' };
+            } else {
+                return { color: 'var(--safe-color)', message: 'Safe for Activity' };
+            }
+        }
+
+        async function updateSafetyIndicators() {
+            try {
+                const flowRate = await fetchRiverData();
+                const tubingSafety = determineSafety(flowRate, TUBING_SAFE_MIN, TUBING_SAFE_MAX);
+                const kayakingSafety = determineSafety(flowRate, KAYAK_RAFT_SAFE_MIN, KAYAK_RAFT_SAFE_MAX);
+
+                updateIndicator('tubing', tubingSafety, flowRate);
+                updateIndicator('kayaking', kayakingSafety, flowRate);
+
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                console.error('Error fetching river data:', error);
+                document.getElementById('loading').textContent = 'Error loading river data. Please try again later.';
+            }
+        }
+
+        function updateIndicator(activity, safety, flowRate) {
+            const indicator = document.getElementById(`${activity}-indicator`);
+            const flowRateElement = document.getElementById(`${activity}-flow-rate`);
+
+            indicator.style.backgroundColor = safety.color;
+            indicator.textContent = safety.message;
+            flowRateElement.textContent = `Current flow rate: ${flowRate} cfs`;
+        }
+
+        updateSafetyIndicators();
+        setInterval(updateSafetyIndicators, 900000); // Update every 15 minutes
+    </script>
+</body>
+</html>
