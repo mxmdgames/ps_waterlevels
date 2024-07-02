@@ -10,12 +10,11 @@
             --primary-color: #1a73e8;
             --secondary-color: #f1f3f4;
             --text-color: #202124;
-            --safe-color: #34a853;
+            --good-color: #34a853;
             --low-color: #fbbc05;
-            --medium-color: #ffa726;
-            --medium-high-color: #fb8c00;
-            --high-color: #e65100;
-            --danger-color: #ea4335;
+            --high-color: #fbbc05;
+            --too-high-color: #1e88e5;
+            --too-low-color: #ea4335;
         }
         body {
             font-family: 'Roboto', sans-serif;
@@ -52,62 +51,49 @@
             margin-bottom: 15px;
             font-size: 1.2rem;
         }
-        .safety-indicator {
+        .gauge-container {
+            position: relative;
             width: 200px;
             height: 100px;
-            position: relative;
-            overflow: hidden;
-            border-radius: 100px 100px 0 0;
-            background: #f0f0f0;
         }
-        .gauge {
-            width: 100%;
-            height: 200px;
-            border-radius: 50%;
+        .gauge-background, .gauge-fill {
             position: absolute;
-            bottom: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 100px 100px 0 0;
+            background-color: #e6e6e6;
             overflow: hidden;
         }
         .gauge-fill {
-            width: 100%;
-            height: 100%;
+            background-color: var(--primary-color);
             transform-origin: center bottom;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease-in-out;
         }
         .gauge-cover {
-            width: 75%;
-            height: 150px;
-            background: white;
-            border-radius: 50%;
             position: absolute;
-            bottom: -25px;
+            width: 80%;
+            height: 80px;
+            background-color: white;
+            border-radius: 50%;
+            bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
             text-align: center;
-            padding: 10px;
-            box-sizing: border-box;
         }
         .gauge-arrow {
-            width: 2px;
-            height: 85px;
-            background: black;
             position: absolute;
             bottom: 0;
             left: 50%;
-            transform-origin: bottom center;
-            transition: transform 0.3s ease;
+            width: 2px;
+            height: 50px;
+            background-color: black;
+            transform-origin: bottom;
+            transition: transform 0.3s ease-in-out;
         }
-        .gauge-level {
-            font-size: 14px;
+        .gauge-value {
+            font-size: 1.5rem;
             font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .gauge-message {
-            font-size: 12px;
+            margin-top: 5px;
         }
         .flow-rate {
             margin-top: 15px;
@@ -121,13 +107,6 @@
         .weather-container {
             margin-top: 20px;
         }
-        @media (max-width: 600px) {
-            .safety-indicator {
-                width: 150px;
-                height: 75px;
-                font-size: 16px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -136,29 +115,25 @@
         <div class="indicators">
             <div class="indicator-container">
                 <h2>Tubing Safety</h2>
-                <div id="tubing-indicator" class="safety-indicator">
-                    <div class="gauge">
-                        <div class="gauge-fill"></div>
-                        <div class="gauge-cover">
-                            <div class="gauge-level"></div>
-                            <div class="gauge-message"></div>
-                        </div>
-                        <div class="gauge-arrow"></div>
+                <div class="gauge-container">
+                    <div class="gauge-background"></div>
+                    <div id="tubing-gauge-fill" class="gauge-fill"></div>
+                    <div class="gauge-cover">
+                        <div id="tubing-gauge-value" class="gauge-value"></div>
                     </div>
+                    <div id="tubing-gauge-arrow" class="gauge-arrow"></div>
                 </div>
                 <div id="tubing-flow-rate" class="flow-rate"></div>
             </div>
             <div class="indicator-container">
                 <h2>Kayaking/Rafting Safety</h2>
-                <div id="kayaking-indicator" class="safety-indicator">
-                    <div class="gauge">
-                        <div class="gauge-fill"></div>
-                        <div class="gauge-cover">
-                            <div class="gauge-level"></div>
-                            <div class="gauge-message"></div>
-                        </div>
-                        <div class="gauge-arrow"></div>
+                <div class="gauge-container">
+                    <div class="gauge-background"></div>
+                    <div id="kayaking-gauge-fill" class="gauge-fill"></div>
+                    <div class="gauge-cover">
+                        <div id="kayaking-gauge-value" class="gauge-value"></div>
                     </div>
+                    <div id="kayaking-gauge-arrow" class="gauge-arrow"></div>
                 </div>
                 <div id="kayaking-flow-rate" class="flow-rate"></div>
             </div>
@@ -180,33 +155,33 @@
 
         function determineRaftingSafety(flowRate) {
             if (flowRate < 400) {
-                return { color: 'var(--danger-color)', message: 'Too low to raft' };
+                return { color: 'var(--too-low-color)', message: 'Too low to raft' };
             } else if (flowRate < 800) {
                 return { color: 'var(--low-color)', message: 'Low' };
             } else if (flowRate < 1500) {
-                return { color: 'var(--medium-color)', message: 'Medium' };
+                return { color: 'var(--good-color)', message: 'Medium' };
             } else if (flowRate < 2400) {
-                return { color: 'var(--medium-high-color)', message: 'Medium/High' };
+                return { color: 'var(--high-color)', message: 'Medium/High' };
             } else if (flowRate < 3600) {
                 return { color: 'var(--high-color)', message: 'High' };
             } else {
-                return { color: 'var(--danger-color)', message: 'Really High' };
+                return { color: 'var(--too-high-color)', message: 'Really High' };
             }
         }
 
         function determineTubingSafety(flowRate) {
             if (flowRate < 75) {
-                return { color: 'var(--danger-color)', message: 'Too Low' };
+                return { color: 'var(--too-low-color)', message: 'Too Low' };
             } else if (flowRate < 200) {
                 return { color: 'var(--low-color)', message: 'Low' };
             } else if (flowRate < 400) {
-                return { color: 'var(--safe-color)', message: 'Good' };
+                return { color: 'var(--good-color)', message: 'Good' };
             } else if (flowRate < 800) {
-                return { color: 'var(--medium-color)', message: 'Caution' };
+                return { color: 'var(--high-color)', message: 'Caution' };
             } else if (flowRate < 1200) {
-                return { color: 'var(--medium-high-color)', message: 'High Danger' };
+                return { color: 'var(--high-color)', message: 'High Danger' };
             } else {
-                return { color: 'var(--danger-color)', message: 'Too High' };
+                return { color: 'var(--too-high-color)', message: 'Too High' };
             }
         }
 
@@ -216,8 +191,8 @@
                 const tubingSafety = determineTubingSafety(flowRate);
                 const kayakingSafety = determineRaftingSafety(flowRate);
 
-                updateIndicator('tubing', tubingSafety, flowRate);
-                updateIndicator('kayaking', kayakingSafety, flowRate);
+                updateGauge('tubing', tubingSafety, flowRate);
+                updateGauge('kayaking', kayakingSafety, flowRate);
 
                 document.getElementById('loading').style.display = 'none';
             } catch (error) {
@@ -226,21 +201,18 @@
             }
         }
 
-        function updateIndicator(activity, safety, flowRate) {
-            const indicator = document.getElementById(`${activity}-indicator`);
+        function updateGauge(activity, safety, flowRate) {
+            const gaugeFill = document.getElementById(`${activity}-gauge-fill`);
+            const gaugeValue = document.getElementById(`${activity}-gauge-value`);
+            const gaugeArrow = document.getElementById(`${activity}-gauge-arrow`);
             const flowRateElement = document.getElementById(`${activity}-flow-rate`);
-            const gaugeFill = indicator.querySelector('.gauge-fill');
-            const gaugeLevel = indicator.querySelector('.gauge-level');
-            const gaugeMessage = indicator.querySelector('.gauge-message');
-            const gaugeArrow = indicator.querySelector('.gauge-arrow');
 
-            // Update gauge color and fill
+            // Update gauge fill color and angle
             gaugeFill.style.backgroundColor = safety.color;
             gaugeFill.style.transform = `rotate(${getRotation(activity, flowRate)}deg)`;
 
             // Update gauge text
-            gaugeLevel.textContent = `${flowRate} cfs`;
-            gaugeMessage.textContent = safety.message;
+            gaugeValue.textContent = `${flowRate} cfs`;
 
             // Update arrow position
             gaugeArrow.style.transform = `rotate(${getArrowRotation(activity, flowRate)}deg)`;
@@ -257,7 +229,7 @@
             } else {
                 maxFlow = 3600;
             }
-            return Math.min(flowRate / maxFlow * maxRotation, maxRotation);
+            return Math.min((flowRate / maxFlow) * maxRotation, maxRotation);
         }
 
         function getArrowRotation(activity, flowRate) {
@@ -268,7 +240,7 @@
             } else {
                 maxFlow = 3600;
             }
-            return Math.min(flowRate / maxFlow * maxRotation, maxRotation);
+            return Math.min((flowRate / maxFlow) * maxRotation, maxRotation);
         }
 
         updateSafetyIndicators();
