@@ -54,16 +54,60 @@
         }
         .safety-indicator {
             width: 200px;
+            height: 100px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 100px 100px 0 0;
+            background: #f0f0f0;
+        }
+        .gauge {
+            width: 100%;
             height: 200px;
             border-radius: 50%;
+            position: absolute;
+            bottom: 0;
+            overflow: hidden;
+        }
+        .gauge-fill {
+            width: 100%;
+            height: 100%;
+            transform-origin: center bottom;
+            transition: transform 0.3s ease;
+        }
+        .gauge-cover {
+            width: 75%;
+            height: 150px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-size: 18px;
+            text-align: center;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .gauge-arrow {
+            width: 2px;
+            height: 85px;
+            background: black;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform-origin: bottom center;
+            transition: transform 0.3s ease;
+        }
+        .gauge-level {
+            font-size: 14px;
             font-weight: bold;
-            color: white;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 5px;
+        }
+        .gauge-message {
+            font-size: 12px;
         }
         .flow-rate {
             margin-top: 15px;
@@ -80,7 +124,7 @@
         @media (max-width: 600px) {
             .safety-indicator {
                 width: 150px;
-                height: 150px;
+                height: 75px;
                 font-size: 16px;
             }
         }
@@ -92,12 +136,30 @@
         <div class="indicators">
             <div class="indicator-container">
                 <h2>Tubing Safety</h2>
-                <div id="tubing-indicator" class="safety-indicator"></div>
+                <div id="tubing-indicator" class="safety-indicator">
+                    <div class="gauge">
+                        <div class="gauge-fill"></div>
+                        <div class="gauge-cover">
+                            <div class="gauge-level"></div>
+                            <div class="gauge-message"></div>
+                        </div>
+                        <div class="gauge-arrow"></div>
+                    </div>
+                </div>
                 <div id="tubing-flow-rate" class="flow-rate"></div>
             </div>
             <div class="indicator-container">
                 <h2>Kayaking/Rafting Safety</h2>
-                <div id="kayaking-indicator" class="safety-indicator"></div>
+                <div id="kayaking-indicator" class="safety-indicator">
+                    <div class="gauge">
+                        <div class="gauge-fill"></div>
+                        <div class="gauge-cover">
+                            <div class="gauge-level"></div>
+                            <div class="gauge-message"></div>
+                        </div>
+                        <div class="gauge-arrow"></div>
+                    </div>
+                </div>
                 <div id="kayaking-flow-rate" class="flow-rate"></div>
             </div>
         </div>
@@ -167,10 +229,46 @@
         function updateIndicator(activity, safety, flowRate) {
             const indicator = document.getElementById(`${activity}-indicator`);
             const flowRateElement = document.getElementById(`${activity}-flow-rate`);
+            const gaugeFill = indicator.querySelector('.gauge-fill');
+            const gaugeLevel = indicator.querySelector('.gauge-level');
+            const gaugeMessage = indicator.querySelector('.gauge-message');
+            const gaugeArrow = indicator.querySelector('.gauge-arrow');
 
-            indicator.style.backgroundColor = safety.color;
-            indicator.textContent = safety.message;
+            // Update gauge color and fill
+            gaugeFill.style.backgroundColor = safety.color;
+            gaugeFill.style.transform = `rotate(${getRotation(activity, flowRate)}deg)`;
+
+            // Update gauge text
+            gaugeLevel.textContent = `${flowRate} cfs`;
+            gaugeMessage.textContent = safety.message;
+
+            // Update arrow position
+            gaugeArrow.style.transform = `rotate(${getArrowRotation(activity, flowRate)}deg)`;
+
+            // Update flow rate text
             flowRateElement.textContent = `Current flow rate: ${flowRate} cfs`;
+        }
+
+        function getRotation(activity, flowRate) {
+            const maxRotation = 180;
+            let maxFlow;
+            if (activity === 'tubing') {
+                maxFlow = 1200;
+            } else {
+                maxFlow = 3600;
+            }
+            return Math.min(flowRate / maxFlow * maxRotation, maxRotation);
+        }
+
+        function getArrowRotation(activity, flowRate) {
+            const maxRotation = 180;
+            let maxFlow;
+            if (activity === 'tubing') {
+                maxFlow = 1200;
+            } else {
+                maxFlow = 3600;
+            }
+            return Math.min(flowRate / maxFlow * maxRotation, maxRotation);
         }
 
         updateSafetyIndicators();
