@@ -117,6 +117,42 @@
             0%, 100% { transform: translate3d(0,-25px,0); }
             50% { transform: translate3d(0,5px,0); }
         }
+        .article {
+            margin-top: 30px;
+        }
+        .article h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .article p {
+            margin-bottom: 15px;
+        }
+        .legend {
+            background-color: rgba(236, 240, 241, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .legend h3 {
+            margin-top: 0;
+            text-align: center;
+        }
+        .legend ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .legend li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .legend .color-indicator {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
         @media (max-width: 600px) {
             .indicator {
                 width: 100%;
@@ -150,6 +186,31 @@
             </div>
         </div>
         <div id="loading">Loading river data...</div>
+
+        <!-- Article Section -->
+        <div class="article">
+            <h2>Scout Wave - Know the Flow and When to Go</h2>
+            <p><strong>November 16, 2023 • Mike Harvey</strong></p>
+            <p>Not ready to put up those surfboards just yet? We’re here to give you the rundown on river flows and gauges so you know the best times to get out there and keep surfing. The Scout Wave in Salida, Colorado was designed to work at the lower range of flows. The Upper Arkansas River is blessed with higher flows than many rivers in Colorado because it serves as the west to east conduit for moving water to Front Range farmers, ranchers, and cities. So let's go over how to understand if the wave is in or not so you can plan your surfing.</p>
+            <p><strong>Understanding River Flows in Salida</strong></p>
+            <p>River flows are measured in cubic feet per second (CFS). The Arkansas River is controlled to some degree through releases of west slope water into high mountain reservoirs like Twin Lakes and Clear Creek. Then water is released down those tributaries into the Ark. Flows change, very often on a daily basis, based on variables including calls for water by downstream water users, snowpack/snow melt, and rainfall.</p>
+            <p><strong>What does this mean for surfing?</strong></p>
+            <p>The Scout wave performs best between 300-1500 CFS. Too far below 300 and you spend most of your surf trying not to flush out, but diehards with high volume boards surf down to 250 CFS. Starting around 350 CFS, get ready to bust out those foamies and lower volume boards and rip some turns! Over 400 CFS is game on. Based on our first year of surfing the wave, a flow rate of about 1100 CFS is the most prime, drop-everything-call-in-sick, level.</p>
+        </div>
+
+        <!-- Legend Section -->
+        <div class="legend">
+            <h3>Scout Wave Flow Legend</h3>
+            <ul>
+                <li><span class="color-indicator" style="background-color: #ff0000;"></span>250 CFS: Too low unless you are a sicko. Higher volume boards.</li>
+                <li><span class="color-indicator" style="background-color: #ff4500;"></span>300 CFS: Minimum Flow. Bring the foamies.</li>
+                <li><span class="color-indicator" style="background-color: #ffa500;"></span>350 CFS: It's getting good. Can ride most shortboards like the Wave Farmer.</li>
+                <li><span class="color-indicator" style="background-color: #ffff00;"></span>400-800 CFS: It's really good.</li>
+                <li><span class="color-indicator" style="background-color: #008000;"></span>800-1100 CFS: It's really really good.</li>
+                <li><span class="color-indicator" style="background-color: #0000ff;"></span>1100-1500 CFS: Still super fun, but swim is a little more intense.</li>
+                <li><span class="color-indicator" style="background-color: #000080;"></span>Over 1500 CFS: Too high, wave starts to foam out.</li>
+            </ul>
+        </div>
     </div>
 
     <div class="ocean">
@@ -188,8 +249,8 @@
             const gaugeValue = document.getElementById('cfs-gauge-value');
             const flowRateElement = document.getElementById('cfs-flow-rate');
 
-            // Set gauge height (scaled to a max of 1000 CFS for visualization)
-            const maxCFS = 1000;
+            // Set gauge height (scaled to a max of 1500 CFS for visualization)
+            const maxCFS = 1500;
             const height = Math.min((cfsValue / maxCFS) * 100, 100);
 
             gaugeFill.style.height = `${height}%`;
@@ -199,10 +260,12 @@
         }
 
         function getColorForCFS(cfsValue) {
-            if (cfsValue < 100) return '#ff0000'; // Red for low flow
-            if (cfsValue < 300) return '#ffa500'; // Orange for moderate flow
-            if (cfsValue < 600) return '#ffff00'; // Yellow for high flow
-            return '#008000'; // Green for very high flow
+            if (cfsValue < 300) return '#ff0000'; // Red for low flow
+            if (cfsValue < 400) return '#ff4500'; // Orange for moderate flow
+            if (cfsValue < 800) return '#ffa500'; // Yellow for high flow
+            if (cfsValue < 1100) return '#ffff00'; // Light green for very high flow
+            if (cfsValue < 1500) return '#008000'; // Green for prime flow
+            return '#000080'; // Blue for extreme flow
         }
 
         // Fetch data when the page loads
