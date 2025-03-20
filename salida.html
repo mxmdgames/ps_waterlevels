@@ -3,79 +3,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arkansas River Flow at Salida, CO</title>
+    <title>San Juan River Safety Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f9;
-            color: #333;
+        html, body { 
+            height: 100%; 
+            margin: 0;
+            padding: 0;
         }
-        h1 {
-            color: #0056b3;
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: radial-gradient(ellipse at center, rgba(255,254,234,1) 0%, rgba(255,254,234,1) 35%, #B7E8EB 100%);
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
         }
         .container {
             max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1;
         }
-        #flow-data {
-            font-size: 1.5em;
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .safety-indicators {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        .indicator {
+            background-color: rgba(236, 240, 241, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px;
+            text-align: center;
+            width: 45%;
+        }
+        .gauge {
+            width: 200px;
+            height: 100px;
+            margin: 0 auto;
+            background-color: #bdc3c7;
+            border-radius: 100px 100px 0 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .gauge-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            transition: height 0.5s;
+        }
+        .gauge-cover {
+            width: 180px;
+            height: 90px;
+            background-color: white;
+            border-radius: 90px 90px 0 0;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+        .gauge-value {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
             font-weight: bold;
-            color: #007bff;
+        }
+        .flow-rate {
+            margin-top: 15px;
+            font-size: 16px;
+        }
+        #loading {
+            text-align: center;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        .ocean { 
+            height: 5%;
+            width: 100%;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            background: #015871;
+        }
+        .wave {
+            background: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/85486/wave.svg) repeat-x; 
+            position: absolute;
+            top: -198px;
+            width: 6400px;
+            height: 198px;
+            animation: wave 7s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+            transform: translate3d(0, 0, 0);
+        }
+        .wave:nth-of-type(2) {
+            top: -175px;
+            animation: wave 7s cubic-bezier(0.36, 0.45, 0.63, 0.53) -.125s infinite, swell 7s ease -1.25s infinite;
+            opacity: 1;
+        }
+        @keyframes wave {
+            0% { margin-left: 0; }
+            100% { margin-left: -1600px; }
+        }
+        @keyframes swell {
+            0%, 100% { transform: translate3d(0,-25px,0); }
+            50% { transform: translate3d(0,5px,0); }
+        }
+        @media (max-width: 600px) {
+            .indicator {
+                width: 100%;
+            }
+            .gauge {
+                width: 100px;
+                height: 50px;
+            }
+            .gauge-cover {
+                width: 90px;
+                height: 45px;
+            }
+            .gauge-value {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Arkansas River Flow at Salida, CO</h1>
-        <p>This page displays the current flow rate (CFS) of the Arkansas River at Salida, Colorado, using data from the USGS API.</p>
-        
-        <!-- Display Flow Data Here -->
-        <p>Current Flow: <span id="flow-data">Loading...</span> CFS</p>
+        <h1>San Juan River Safety Guide</h1>
+        <div class="safety-indicators">
+            <div class="indicator">
+                <h2>Current Streamflow (CFS)</h2>
+                <div class="gauge">
+                    <div id="cfs-gauge-fill" class="gauge-fill"></div>
+                    <div class="gauge-cover"></div>
+                    <div id="cfs-gauge-value" class="gauge-value"></div>
+                </div>
+                <div id="cfs-flow-rate" class="flow-rate"></div>
+            </div>
+        </div>
+        <div id="loading">Loading river data...</div>
+    </div>
+
+    <div class="ocean">
+        <div class="wave"></div>
+        <div class="wave"></div>
     </div>
 
     <script>
-        // USGS API endpoint for the Arkansas River at Salida, CO (Station 07091000)
-        const apiUrl = "https://waterservices.usgs.gov/nwis/iv/?format=json&sites=07091000&parameterCd=00060&siteStatus=all";
+        const SITE_CODE = '07091200'; // USGS site code for the river
 
-        // Fetch data from the USGS API
-        async function fetchFlowData() {
+        async function fetchCFSData() {
+            const url = `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${SITE_CODE}&parameterCd=00060`;
+
             try {
-                const response = await fetch(apiUrl);
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch data");
+                }
                 const data = await response.json();
 
-                // Log the full API response for debugging
-                console.log("API Response:", data);
+                // Extract the current CFS value
+                const cfsValue = parseFloat(data.value.timeSeries[0].values[0].value[0].value);
+                const dateTime = data.value.timeSeries[0].values[0].value[0].dateTime;
 
-                // Extract the flow rate from the JSON response
-                if (data.value && data.value.timeSeries) {
-                    const timeSeries = data.value.timeSeries;
-                    if (timeSeries.length > 0) {
-                        const values = timeSeries[0].values;
-                        if (values && values.length > 0) {
-                            const flowRate = values[0].value[0].value;
-                            document.getElementById("flow-data").textContent = flowRate;
-                        } else {
-                            throw new Error("No flow data available in the response.");
-                        }
-                    } else {
-                        throw new Error("No time series data available in the response.");
-                    }
-                } else {
-                    throw new Error("Invalid API response structure.");
-                }
+                // Update the gauge and display
+                updateGauge(cfsValue, dateTime);
+                document.getElementById('loading').style.display = 'none';
             } catch (error) {
-                console.error("Error fetching flow data:", error);
-                document.getElementById("flow-data").textContent = "Unavailable";
+                console.error("Error fetching CFS data:", error);
+                document.getElementById('loading').textContent = 'Error loading data. Please try again later.';
             }
         }
 
+        function updateGauge(cfsValue, dateTime) {
+            const gaugeFill = document.getElementById('cfs-gauge-fill');
+            const gaugeValue = document.getElementById('cfs-gauge-value');
+            const flowRateElement = document.getElementById('cfs-flow-rate');
+
+            // Set gauge height (scaled to a max of 1000 CFS for visualization)
+            const maxCFS = 1000;
+            const height = Math.min((cfsValue / maxCFS) * 100, 100);
+
+            gaugeFill.style.height = `${height}%`;
+            gaugeFill.style.backgroundColor = getColorForCFS(cfsValue);
+            gaugeValue.textContent = `${cfsValue} CFS`;
+            flowRateElement.innerHTML = `Current flow rate: ${cfsValue} CFS<br>Last updated: ${new Date(dateTime).toLocaleString()}`;
+        }
+
+        function getColorForCFS(cfsValue) {
+            if (cfsValue < 100) return '#ff0000'; // Red for low flow
+            if (cfsValue < 300) return '#ffa500'; // Orange for moderate flow
+            if (cfsValue < 600) return '#ffff00'; // Yellow for high flow
+            return '#008000'; // Green for very high flow
+        }
+
         // Fetch data when the page loads
-        fetchFlowData();
+        fetchCFSData();
+        setInterval(fetchCFSData, 900000); // Update every 15 minutes
     </script>
 </body>
 </html>
