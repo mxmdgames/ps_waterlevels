@@ -52,17 +52,21 @@
                 console.log("API Response:", data);
 
                 // Extract the flow rate from the JSON response
-                const timeSeries = data.value.timeSeries;
-                if (timeSeries && timeSeries.length > 0) {
-                    const values = timeSeries[0].values;
-                    if (values && values.length > 0) {
-                        const flowRate = values[0].value[0].value;
-                        document.getElementById("flow-data").textContent = flowRate;
+                if (data.value && data.value.timeSeries) {
+                    const timeSeries = data.value.timeSeries;
+                    if (timeSeries.length > 0) {
+                        const values = timeSeries[0].values;
+                        if (values && values.length > 0) {
+                            const flowRate = values[0].value[0].value;
+                            document.getElementById("flow-data").textContent = flowRate;
+                        } else {
+                            throw new Error("No flow data available in the response.");
+                        }
                     } else {
-                        throw new Error("No flow data available in the response.");
+                        throw new Error("No time series data available in the response.");
                     }
                 } else {
-                    throw new Error("No time series data available in the response.");
+                    throw new Error("Invalid API response structure.");
                 }
             } catch (error) {
                 console.error("Error fetching flow data:", error);
