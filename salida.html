@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salida Surf Guide</title>
+    <title>Scout Wave</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         html, body { 
@@ -166,7 +166,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>San Juan River Safety Guide</h1>
+        <h1>Scout Wave</h1>
         <div class="safety-indicators">
             <div class="indicator">
                 <h2>Current Streamflow (CFS)</h2>
@@ -176,6 +176,16 @@
                     <div id="cfs-gauge-value" class="gauge-value"></div>
                 </div>
                 <div id="cfs-flow-rate" class="flow-rate"></div>
+            </div>
+            <!-- New Temperature Indicator -->
+            <div class="indicator">
+                <h2>Water Temperature (°F)</h2>
+                <div class="gauge">
+                    <div id="temp-gauge-fill" class="gauge-fill"></div>
+                    <div class="gauge-cover"></div>
+                    <div id="temp-gauge-value" class="gauge-value"></div>
+                </div>
+                <div id="temp-temp-rate" class="flow-rate"></div>
             </div>
         </div>
         <div id="loading">Loading river data...</div>
@@ -213,7 +223,7 @@
         const SITE_CODE = '07091200'; // USGS site code for the river
         const WINTER_MONTHS = [10, 11, 12, 1, 2, 3]; // October to March
 
-        async function fetchCFSData() {
+        async function fetchData() {
             const currentMonth = new Date().getMonth() + 1; // Months are 0-indexed in JavaScript
             if (WINTER_MONTHS.includes(currentMonth)) {
                 // Show winter notice and hide gauge
@@ -222,7 +232,7 @@
                 return;
             }
 
-            const url = `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${SITE_CODE}&parameterCd=00060`;
+            const url = `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${SITE_CODE}&parameterCd=00060,00010`;
 
             try {
                 const response = await fetch(url);
@@ -231,20 +241,22 @@
                 }
                 const data = await response.json();
 
-                // Extract the current CFS value
+                // Extract the current CFS and temperature values
                 const cfsValue = parseFloat(data.value.timeSeries[0].values[0].value[0].value);
+                const tempValue = parseFloat(data.value.timeSeries[1].values[0].value[0].value);
                 const dateTime = data.value.timeSeries[0].values[0].value[0].dateTime;
 
-                // Update the gauge and display
-                updateGauge(cfsValue, dateTime);
+                // Update the gauges and display
+                updateCfsGauge(cfsValue, dateTime);
+                updateTempGauge(tempValue);
                 document.getElementById('loading').style.display = 'none';
             } catch (error) {
-                console.error("Error fetching CFS data:", error);
+                console.error("Error fetching data:", error);
                 document.getElementById('loading').textContent = 'Error loading data. Please try again later.';
             }
         }
 
-        function updateGauge(cfsValue, dateTime) {
+        function updateCfsGauge(cfsValue, dateTime) {
             const gaugeFill = document.getElementById('cfs-gauge-fill');
             const gaugeValue = document.getElementById('cfs-gauge-value');
             const flowRateElement = document.getElementById('cfs-flow-rate');
@@ -259,6 +271,21 @@
             flowRateElement.innerHTML = `Current flow rate: ${cfsValue} CFS<br>Last updated: ${new Date(dateTime).toLocaleString()}`;
         }
 
+        function updateTempGauge(tempValue) {
+            const tempGaugeFill = document.getElementById('temp-gauge-fill');
+            const tempGaugeValue = document.getElementById('temp-gauge-value');
+            const tempRateElement = document.getElementById('temp-temp-rate');
+
+            // Set gauge height (scaled to a max of 80°F for visualization)
+            const maxTemp = 80;
+            const height = Math.min((tempValue / maxTemp) * 100, 100);
+
+            tempGaugeFill.style.height = `${height}%`;
+            tempGaugeFill.style.backgroundColor = getColorForTemp(tempValue);
+            tempGaugeValue.textContent = `${tempValue}°F`;
+            tempRateElement.innerHTML = `Current temp: ${tempValue}°F`;
+        }
+
         function getColorForCFS(cfsValue) {
             if (cfsValue < 300) return '#ff0000'; // Red for low flow
             if (cfsValue < 400) return '#ff4500'; // Orange for moderate flow
@@ -268,9 +295,16 @@
             return '#000080'; // Blue for extreme flow
         }
 
+        function getColorForTemp(tempValue) {
+            if (tempValue < 50) return '#0000ff'; // Blue for cold water
+            if (tempValue < 60) return '#00bfff'; // Light blue for cool water
+            if (tempValue < 70) return '#ffff00'; // Yellow for warm water
+            return '#ff4500'; // Orange for hot water
+        }
+
         // Fetch data when the page loads
-        fetchCFSData();
-        setInterval(fetchCFSData, 900000); // Update every 15 minutes
+        fetchData();
+        setInterval(fetchData, 900000); // Update every 15 minutes
     </script>
 </body>
 </html>
