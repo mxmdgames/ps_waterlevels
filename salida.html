@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surfing Conditions in Salida</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        html, body { 
+            height: 100%; 
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: radial-gradient(ellipse at center, rgba(255,254,234,1) 0%, rgba(255,254,234,1) 35%, #B7E8EB 100%);
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .surfing-indicators {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        .indicator {
+            background-color: rgba(236, 240, 241, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px;
+            text-align: center;
+            width: 45%;
+        }
+        .gauge {
+            width: 200px;
+            height: 100px;
+            margin: 0 auto;
+            background-color: #bdc3c7;
+            border-radius: 100px 100px 0 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .gauge-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            transition: height 0.5s;
+        }
+        .gauge-cover {
+            width: 180px;
+            height: 90px;
+            background-color: white;
+            border-radius: 90px 90px 0 0;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+        .gauge-value {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .flow-rate {
+            margin-top: 15px;
+            font-size: 16px;
+        }
+        #loading {
+            text-align: center;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        .legends {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        .legend {
+            background-color: rgba(236, 240, 241, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            width: 45%;
+            margin: 10px 0;
+        }
+        .legend h3 {
+            margin-top: 0;
+            text-align: center;
+        }
+        .legend ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .legend li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .legend .color-indicator {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .last-updated {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Surfing Conditions in Salida</h1>
+        <div class="surfing-indicators">
+            <div class="indicator">
+                <h2>Current Water Flow (CFS)</h2>
+                <div class="gauge">
+                    <div id="flow-gauge-fill" class="gauge-fill"></div>
+                    <div class="gauge-cover"></div>
+                    <div id="flow-gauge-value" class="gauge-value"></div>
+                </div>
+                <div id="flow-rate" class="flow-rate"></div>
+            </div>
+            <div class="indicator">
+                <h2>Water Temperature</h2>
+                <div class="gauge">
+                    <div id="temp-gauge-fill" class="gauge-fill"></div>
+                    <div class="gauge-cover"></div>
+                    <div id="temp-gauge-value" class="gauge-value"></div>
+                </div>
+                <div id="temp-description" class="flow-rate"></div>
+            </div>
+        </div>
+        <div id="loading">Loading conditions...</div>
+        <div id="last-updated" class="last-updated"></div>
+    </div>
+
+    <script>
+        const FLOW_SITE_CODE = '09342500';
+        const TEMP_SITE_CODE = '09342600';
+
+        async function fetchRiverData() {
+            const flowUrl = `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${FLOW_SITE_CODE}&parameterCd=00060&siteStatus=all`;
+            const tempUrl = `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${TEMP_SITE_CODE}&parameterCd=00010&siteStatus=all`;
+
+            const [flowResponse, tempResponse] = await Promise.all([
+                fetch(flowUrl),
+                fetch(tempUrl)
+            ]);
+
+            const flowData = await flowResponse.json();
+            const tempData = await tempResponse.json();
+
+            const flowRate = parseFloat(flowData.value.timeSeries[0].values[0].value[0].value);
+            const tempCelsius = parseFloat(tempData.value.timeSeries[0].values[0].value[0].value);
+            const tempFahrenheit = (tempCelsius * 9/5) + 32;
+
+            return { flowRate, tempFahrenheit };
+        }
+
+        function determineTemperature(temp) {
+            if (temp < 50) return { color: '#0000ff', message: 'Very Cold' };
+            if (temp < 60) return { color: '#00ffff', message: 'Cold' };
+            if (temp < 70) return { color: '#00ff00', message: 'Cool' };
+            if (temp < 80) return { color: '#ffff00', message: 'Warm' };
+            return { color: '#ff0000', message: 'Hot' };
+        }
+
+        async function updateConditions() {
+            try {
+                const { flowRate, tempFahrenheit } = await fetchRiverData();
+                updateFlowGauge(flowRate);
+                updateTempGauge(tempFahrenheit);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('last-updated').textContent = `Last Updated: ${new Date().toLocaleTimeString()}`;
+            } catch (error) {
+                console.error('Error fetching river data:', error);
+                document.getElementById('loading').textContent = 'Error loading river data. Please try again later.';
+            }
+        }
+
+        function updateFlowGauge(flowRate) {
+            const gaugeFill = document.getElementById('flow-gauge-fill');
+            const gaugeValue = document.getElementById('flow-gauge-value');
+            const flowRateElement = document.getElementById('flow-rate');
+
+            const maxHeight = 1500; // maximum expected flow rate
+            const height = Math.min((flowRate / maxHeight) * 100, 100);
+
+            gaugeFill.style.height = `${height}%`;
+            gaugeFill.style.backgroundColor = '#00ff00'; // Example color for flow gauge
+            gaugeValue.textContent = flowRate;
+            flowRateElement.innerHTML = `Current flow rate: ${flowRate} cfs`;
+        }
+
+        function updateTempGauge(temp) {
+            const safety = determineTemperature(temp);
+            const gaugeFill = document.getElementById('temp-gauge-fill');
+            const gaugeValue = document.getElementById('temp-gauge-value');
+            const descriptionElement = document.getElementById('temp-description');
+
+            const minTemp = 32; // Freezing point of water
+            const maxTemp = 100; // Very hot temperature
+
+            const height = Math.min((temp - minTemp) / (maxTemp - minTemp) * 100, 100);
+            gaugeFill.style.height = `${height}%`;
+            gaugeFill.style.backgroundColor = safety.color;
+            gaugeValue.textContent = `${temp}°F`;
+            descriptionElement.textContent = `Water Temperature: ${safety.message}`;
+        }
+
+        // Call update function on page load
+        updateConditions();
+    </script>
+</body>
+</html>
