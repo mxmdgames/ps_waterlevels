@@ -22,23 +22,41 @@
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        iframe {
-            width: 100%;
-            height: 400px;
-            border: none;
-            border-radius: 8px;
+        #flow-data {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #007bff;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Arkansas River Flow at Salida, CO</h1>
-        <p>This page displays the current flow rate (CFS) of the Arkansas River at Salida, Colorado, using data from the USGS.</p>
+        <p>This page displays the current flow rate (CFS) of the Arkansas River at Salida, Colorado, using data from the USGS API.</p>
         
-        <!-- Embedded USGS Real-Time Data -->
-        <iframe src="https://waterdata.usgs.gov/nwis/uv?site_no=07091000&format=gif_default&period=1"></iframe>
-        
-        <p>Data provided by the <a href="https://waterdata.usgs.gov/nwis" target="_blank">USGS National Water Information System</a>.</p>
+        <!-- Display Flow Data Here -->
+        <p>Current Flow: <span id="flow-data">Loading...</span> CFS</p>
     </div>
+
+    <script>
+        // USGS API endpoint for the Arkansas River at Salida, CO (Station 07091000)
+        const apiUrl = "https://waterservices.usgs.gov/nwis/iv/?format=json&sites=07091000&parameterCd=00060&siteStatus=all";
+
+        // Fetch data from the USGS API
+        async function fetchFlowData() {
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                const flowRate = data.value.timeSeries[0].values[0].value[0].value;
+                document.getElementById("flow-data").textContent = flowRate;
+            } catch (error) {
+                console.error("Error fetching flow data:", error);
+                document.getElementById("flow-data").textContent = "Unavailable";
+            }
+        }
+
+        // Fetch data when the page loads
+        fetchFlowData();
+    </script>
 </body>
 </html>
