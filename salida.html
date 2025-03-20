@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scout Wave Surfing Conditions</title>
+    <title>Arkansas River at Salida, CO - Surfing Conditions</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         html, body { 
@@ -98,7 +98,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Scout Wave Surfing Conditions</h1>
+        <h1>Arkansas River at Salida, CO - Surfing Conditions</h1>
         <div class="surfing-indicators">
             <div class="indicator">
                 <h2>Current Water Flow (CFS)</h2>
@@ -124,8 +124,8 @@
     </div>
 
     <script>
-        const FLOW_SITE_CODE = '07091000'; // Arkansas River at Salida, CO
-        const TEMP_SITE_CODE = '07091000'; // Same site for temperature (if available)
+        const FLOW_SITE_CODE = '07091500'; // USGS Station ID for Arkansas River at Salida, CO
+        const TEMP_SITE_CODE = '07091500'; // Same site for temperature
 
         async function fetchRiverData() {
             const flowUrl = `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${FLOW_SITE_CODE}&parameterCd=00060&siteStatus=all`;
@@ -139,6 +139,10 @@
 
                 const flowData = await flowResponse.json();
                 const tempData = await tempResponse.json();
+
+                // Log the full API responses for debugging
+                console.log('Flow API Response:', flowData);
+                console.log('Temperature API Response:', tempData);
 
                 // Check if flow data is available
                 if (!flowData.value || !flowData.value.timeSeries || !flowData.value.timeSeries[0] || !flowData.value.timeSeries[0].values) {
@@ -166,8 +170,8 @@
             const flowGaugeValue = document.getElementById('flow-gauge-value');
             const flowRateElement = document.getElementById('flow-rate');
 
-            // Update gauge height (assuming max flow rate is 1000 CFS for visualization)
-            const maxFlow = 1000;
+            // Update gauge height (assuming max flow rate is 2000 CFS for visualization)
+            const maxFlow = 2000;
             const fillHeight = (flowRate / maxFlow) * 100;
             flowGaugeFill.style.height = `${Math.min(fillHeight, 100)}%`;
 
@@ -194,14 +198,19 @@
         async function updateConditions() {
             try {
                 const { flowRate, tempFahrenheit } = await fetchRiverData();
-                updateFlowGauge(flowRate);
 
-                // Update temperature gauge only if temperature data is available
+                if (flowRate !== null) {
+                    updateFlowGauge(flowRate);
+                } else {
+                    document.getElementById('flow-gauge-value').textContent = 'N/A';
+                    document.getElementById('flow-rate').textContent = 'Flow data not available.';
+                }
+
                 if (tempFahrenheit !== null) {
                     updateTempGauge(tempFahrenheit);
                     document.getElementById('temp-gauge-fill').style.display = 'block';
                 } else {
-                    document.getElementById('temp-gauge-fill').style.display = 'none';
+                    document.getElementById('temp-gauge-value').textContent = 'N/A';
                     document.getElementById('temp-description').textContent = 'Temperature data not available.';
                 }
 
