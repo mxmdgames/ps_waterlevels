@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surfing in Salida - Scout Wave Guide</title>
+    <title>Scout Wave - Know the Flow and When to Go</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         html, body { 
@@ -78,7 +78,7 @@
             font-size: 24px;
             font-weight: bold;
         }
-        .wave-rate {
+        .flow-rate {
             margin-top: 15px;
             font-size: 16px;
         }
@@ -144,17 +144,11 @@
             margin-bottom: 10px;
         }
         .legend .color-indicator {
-            width: 20px;
-            height: 20px;
+            width: 20px;  /* Set the width of the color indicator */
+            height: 20px; /* Set the height of the color indicator */
             margin-right: 10px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-        .last-updated {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-            color: #7f8c8d;
+            border-radius: 50%; /* Makes the indicator a circle */
+            flex-shrink: 0; /* Prevents shrinking */
         }
         @media (max-width: 600px) {
             .indicator {
@@ -179,33 +173,28 @@
 </head>
 <body>
     <div class="container">
-        <h1>Surfing in Salida - Scout Wave Guide</h1>
+        <h1>Scout Wave - Know the Flow and When to Go</h1>
         <div class="safety-indicators">
             <div class="indicator">
-                <h2>Scout Wave Conditions</h2>
+                <h2>Scout Wave Flow</h2>
                 <div class="gauge">
                     <div id="wave-gauge-fill" class="gauge-fill"></div>
                     <div class="gauge-cover"></div>
                     <div id="wave-gauge-value" class="gauge-value"></div>
                 </div>
-                <div id="wave-rate" class="wave-rate"></div>
+                <div id="wave-flow-rate" class="flow-rate"></div>
             </div>
         </div>
         <div class="legends">
             <div class="legend">
-                <h3>Scout Wave Conditions Legend</h3>
-                <ul id="wave-legend">
-                    <li><span class="color-indicator" style="background-color: #ff0000;"></span>Too Low (< 300 CFS)</li>
-                    <li><span class="color-indicator" style="background-color: #ffa500;"></span>Minimum Wave (300-350 CFS)</li>
-                    <li><span class="color-indicator" style="background-color: #ffff00;"></span>Good (350-800 CFS)</li>
-                    <li><span class="color-indicator" style="background-color: #00ff00;"></span>Great (800-1100 CFS)</li>
-                    <li><span class="color-indicator" style="background-color: #0000ff;"></span>Prime (1100-1500 CFS)</li>
-                    <li><span class="color-indicator" style="background-color: #800080;"></span>Too High (> 1500 CFS)</li>
-                </ul>
+                <h3>Scout Wave Flow Legend</h3>
+                <ul id="wave-legend"></ul>
             </div>
         </div>
-        <div id="loading">Loading wave data...</div>
-        <div id="last-updated" class="last-updated"></div>
+        <div id="loading">Loading river data...</div>
+        <div class="weather-container">
+            <a class="weatherwidget-io" href="https://forecast7.com/en/38d53n105d99/salida/?unit=us" data-label_1="SALIDA" data-label_2="WEATHER" data-theme="original">SALIDA WEATHER</a>
+        </div>
     </div>
 
     <div class="ocean">
@@ -214,62 +203,64 @@
     </div>
 
     <script>
-        const WAVE_SITE_CODE = '09342500';
+        const FLOW_SITE_CODE = '07091000'; // Arkansas River at Salida, CO
 
-        async function fetchWaveData() {
-            const waveUrl = `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${WAVE_SITE_CODE}&parameterCd=00060&siteStatus=all`;
+        async function fetchRiverData() {
+            const flowUrl = `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${FLOW_SITE_CODE}&parameterCd=00060&siteStatus=all`;
 
-            const waveResponse = await fetch(waveUrl);
-            const waveData = await waveResponse.json();
+            const flowResponse = await fetch(flowUrl);
+            const flowData = await flowResponse.json();
 
-            const waveRate = parseFloat(waveData.value.timeSeries[0].values[0].value[0].value);
+            const flowRate = parseFloat(flowData.value.timeSeries[0].values[0].value[0].value);
 
-            return { waveRate };
+            return { flowRate };
         }
 
-        function determineWaveConditions(waveRate) {
-            if (waveRate < 300) return { color: '#ff0000', message: 'Too Low' };
-            if (waveRate < 350) return { color: '#ffa500', message: 'Minimum Wave' };
-            if (waveRate < 800) return { color: '#ffff00', message: 'Good' };
-            if (waveRate < 1100) return { color: '#00ff00', message: 'Great' };
-            if (waveRate < 1500) return { color: '#0000ff', message: 'Prime' };
-            return { color: '#800080', message: 'Too High' };
+        function determineWaveCondition(flowRate) {
+            if (flowRate < 250) return { color: '#ff0000', message: 'Too low unless you are a sicko. Higher volume boards.' };
+            if (flowRate < 300) return { color: '#ff4500', message: 'Minimum Flow. Bring the foamies.' };
+            if (flowRate < 350) return { color: '#ffa500', message: 'It\'s getting good. Can ride most shortboards like the Wave Farmer.' };
+            if (flowRate < 800) return { color: '#ff8c00', message: 'It\'s really good.' };
+            if (flowRate < 1100) return { color: '#008000', message: 'It\'s really really good.' };
+            if (flowRate < 1500) return { color: '#00ff00', message: 'Still super fun, but swim is a little more intense.' };
+            return { color: '#0000ff', message: 'Too high, wave starts to foam out.' };
         }
 
-        async function updateWaveIndicators() {
+        async function updateSafetyIndicators() {
             try {
-                const { waveRate } = await fetchWaveData();
-                updateGauge('surfing', waveRate);
+                const { flowRate } = await fetchRiverData();
+                updateGauge(flowRate);
                 document.getElementById('loading').style.display = 'none';
             } catch (error) {
-                console.error('Error fetching wave data:', error);
-                document.getElementById('loading').textContent = 'Error loading wave data. Please try again later.';
+                console.error('Error fetching river data:', error);
+                document.getElementById('loading').textContent = 'Error loading river data. Please try again later.';
             }
         }
 
-        function updateGauge(activity, waveRate) {
-            const conditions = determineWaveConditions(waveRate);
-            const gaugeFill = document.getElementById(`${activity}-gauge-fill`);
-            const gaugeValue = document.getElementById(`${activity}-gauge-value`);
-            const waveRateElement = document.getElementById(`${activity}-wave-rate`);
+        function updateGauge(flowRate) {
+            const condition = determineWaveCondition(flowRate);
+            const gaugeFill = document.getElementById('wave-gauge-fill');
+            const gaugeValue = document.getElementById('wave-gauge-value');
+            const flowRateElement = document.getElementById('wave-flow-rate');
 
-            const maxHeight = 1500; // Maximum CFS for a prime surf condition
-            const height = Math.min((waveRate / maxHeight) * 100, 100);
+            const maxHeight = 1500; // Maximum flow rate for the gauge
+            const height = Math.min((flowRate / maxHeight) * 100, 100);
 
             gaugeFill.style.height = `${height}%`;
-            gaugeFill.style.backgroundColor = conditions.color;
-            gaugeValue.textContent = waveRate;
-            waveRateElement.innerHTML = `Current wave conditions: ${waveRate} cfs<br>${conditions.message}`;
+            gaugeFill.style.backgroundColor = condition.color;
+            gaugeValue.textContent = flowRate;
+            flowRateElement.innerHTML = `Current flow rate: ${flowRate} cfs<br>${condition.message}`;
         }
 
-        async function populateLegends() {
+        function populateLegends() {
             const waveLegend = [
-                { color: '#ff0000', message: 'Too Low (< 300 cfs)' },
-                { color: '#ffa500', message: 'Minimum Wave (300-350 cfs)' },
-                { color: '#ffff00', message: 'Good (350-800 cfs)' },
-                { color: '#00ff00', message: 'Great (800-1100 cfs)' },
-                { color: '#0000ff', message: 'Prime (1100-1500 cfs)' },
-                { color: '#800080', message: 'Too High (> 1500 cfs)' }
+                { color: '#ff0000', message: 'Too low unless you are a sicko. Higher volume boards (< 250 cfs)' },
+                { color: '#ff4500', message: 'Minimum Flow. Bring the foamies. (250-299 cfs)' },
+                { color: '#ffa500', message: 'It\'s getting good. Can ride most shortboards like the Wave Farmer. (300-349 cfs)' },
+                { color: '#ff8c00', message: 'It\'s really good. (350-799 cfs)' },
+                { color: '#008000', message: 'It\'s really really good. (800-1099 cfs)' },
+                { color: '#00ff00', message: 'Still super fun, but swim is a little more intense. (1100-1499 cfs)' },
+                { color: '#0000ff', message: 'Too high, wave starts to foam out. (1500+ cfs)' }
             ];
 
             populateLegend('wave-legend', waveLegend);
@@ -284,11 +275,15 @@
             });
         }
 
+        // Call this function after the DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
             populateLegends();
-            updateWaveIndicators();
-            setInterval(updateWaveIndicators, 900000); // Update every 15 minutes
+            updateSafetyIndicators();
+            setInterval(updateSafetyIndicators, 900000); // Update every 15 minutes
         });
+    </script>
+    <script>
+        !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
     </script>
 </body>
 </html>
