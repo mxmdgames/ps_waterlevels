@@ -145,16 +145,16 @@
                 console.log('Temperature API Response:', tempData);
 
                 // Check if flow data is available
-                if (!flowData.value || !flowData.value.timeSeries || !flowData.value.timeSeries[0] || !flowData.value.timeSeries[0].values) {
+                if (!flowData.value || !flowData.value.value || !flowData.value.value.timeSeries || !flowData.value.value.timeSeries[0] || !flowData.value.value.timeSeries[0].values) {
                     throw new Error('Flow data is not available or invalid.');
                 }
 
-                const flowRate = parseFloat(flowData.value.timeSeries[0].values[0].value[0].value);
+                const flowRate = parseFloat(flowData.value.value.timeSeries[0].values[0].value[0].value);
 
                 // Check if temperature data is available
                 let tempFahrenheit = null;
-                if (tempData.value && tempData.value.timeSeries && tempData.value.timeSeries[0] && tempData.value.timeSeries[0].values) {
-                    const tempCelsius = parseFloat(tempData.value.timeSeries[0].values[0].value[0].value);
+                if (tempData.value && tempData.value.value && tempData.value.value.timeSeries && tempData.value.value.timeSeries[0] && tempData.value.value.timeSeries[0].values) {
+                    const tempCelsius = parseFloat(tempData.value.value.timeSeries[0].values[0].value[0].value);
                     tempFahrenheit = (tempCelsius * 9 / 5) + 32;
                 }
 
@@ -169,6 +169,13 @@
             const flowGaugeFill = document.getElementById('flow-gauge-fill');
             const flowGaugeValue = document.getElementById('flow-gauge-value');
             const flowRateElement = document.getElementById('flow-rate');
+
+            if (flowRate === null || isNaN(flowRate)) {
+                flowGaugeValue.textContent = 'N/A';
+                flowRateElement.textContent = 'Flow data not available.';
+                flowGaugeFill.style.height = '0%';
+                return;
+            }
 
             // Update gauge height (assuming max flow rate is 2000 CFS for visualization)
             const maxFlow = 2000;
@@ -185,6 +192,13 @@
             const tempGaugeValue = document.getElementById('temp-gauge-value');
             const tempDescription = document.getElementById('temp-description');
 
+            if (tempFahrenheit === null || isNaN(tempFahrenheit)) {
+                tempGaugeValue.textContent = 'N/A';
+                tempDescription.textContent = 'Temperature data not available.';
+                tempGaugeFill.style.height = '0%';
+                return;
+            }
+
             // Update gauge height (assuming max temperature is 100°F for visualization)
             const maxTemp = 100;
             const fillHeight = (tempFahrenheit / maxTemp) * 100;
@@ -199,14 +213,14 @@
             try {
                 const { flowRate, tempFahrenheit } = await fetchRiverData();
 
-                if (flowRate !== null) {
+                if (flowRate !== null && !isNaN(flowRate)) {
                     updateFlowGauge(flowRate);
                 } else {
                     document.getElementById('flow-gauge-value').textContent = 'N/A';
                     document.getElementById('flow-rate').textContent = 'Flow data not available.';
                 }
 
-                if (tempFahrenheit !== null) {
+                if (tempFahrenheit !== null && !isNaN(tempFahrenheit)) {
                     updateTempGauge(tempFahrenheit);
                     document.getElementById('temp-gauge-fill').style.display = 'block';
                 } else {
