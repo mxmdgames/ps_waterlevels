@@ -153,6 +153,18 @@
             border-radius: 50%; /* Makes the indicator a circle */
             flex-shrink: 0; /* Prevents shrinking */
         }
+        .map-container {
+            margin-top: 30px;
+            text-align: center;
+            background-color: rgba(236, 240, 241, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .map-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
         @media (max-width: 600px) {
             .indicator {
                 width: 100%;
@@ -206,6 +218,14 @@
                 <div id="temp-description" class="flow-rate"></div>
             </div>
         </div>
+        
+        <!-- Map Section - Moved outside the script tag -->
+        <div class="map-container">
+            <h2>Rapids</h2>
+            <img src="pagosatownrapidsv3.png" alt="Map of San Juan River Pagosa Springs Town Run, Colorado" />
+            <p>Rapids map (PagosaSprings, Colorado)</p>
+        </div>
+        
         <div class="legends">
             <div class="legend">
                 <h3>Tubing Safety Legend</h3>
@@ -371,14 +391,6 @@
             updateSafetyIndicators();
             setInterval(updateSafetyIndicators, 900000); // Update every 15 minutes
         });
-        
-        <!-- Map Section -->
-        <div class="map-container">
-            <h2>Rapids</h2>
-            <img src="pagosatownrapidsv3.png" alt="Map of San Juan River Pagosa Springs Town Run, Colorado" />
-            <p>Rapids map (PagosaSprings, Colorado)</p>
-        </div>
-
     </script>
     <script>
         !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
