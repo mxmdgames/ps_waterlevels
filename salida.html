@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>San Juan River Safety Guide</title>
+    <title>Salida Surf Guide</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         html, body { 
@@ -127,31 +127,24 @@
         .article p {
             margin-bottom: 15px;
         }
-        .legend {
-            background-color: rgba(236, 240, 241, 0.8);
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        .legend h3 {
-            margin-top: 0;
-            text-align: center;
-        }
-        .legend ul {
+        .article ul {
             list-style-type: none;
             padding: 0;
         }
-        .legend li {
-            display: flex;
-            align-items: center;
+        .article ul li {
             margin-bottom: 10px;
         }
-        .legend .color-indicator {
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
-            border-radius: 50%;
-            flex-shrink: 0;
+        .winter-notice {
+            background-color: rgba(255, 235, 59, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .winter-notice a {
+            color: #2c3e50;
+            font-weight: bold;
+            text-decoration: underline;
         }
         @media (max-width: 600px) {
             .indicator {
@@ -187,29 +180,27 @@
         </div>
         <div id="loading">Loading river data...</div>
 
-        <!-- Article Section -->
-        <div class="article">
-            <h2>Scout Wave - Know the Flow and When to Go</h2>
-            <p><strong>November 16, 2023 • Mike Harvey</strong></p>
-            <p>Not ready to put up those surfboards just yet? We’re here to give you the rundown on river flows and gauges so you know the best times to get out there and keep surfing. The Scout Wave in Salida, Colorado was designed to work at the lower range of flows. The Upper Arkansas River is blessed with higher flows than many rivers in Colorado because it serves as the west to east conduit for moving water to Front Range farmers, ranchers, and cities. So let's go over how to understand if the wave is in or not so you can plan your surfing.</p>
-            <p><strong>Understanding River Flows in Salida</strong></p>
-            <p>River flows are measured in cubic feet per second (CFS). The Arkansas River is controlled to some degree through releases of west slope water into high mountain reservoirs like Twin Lakes and Clear Creek. Then water is released down those tributaries into the Ark. Flows change, very often on a daily basis, based on variables including calls for water by downstream water users, snowpack/snow melt, and rainfall.</p>
-            <p><strong>What does this mean for surfing?</strong></p>
-            <p>The Scout wave performs best between 300-1500 CFS. Too far below 300 and you spend most of your surf trying not to flush out, but diehards with high volume boards surf down to 250 CFS. Starting around 350 CFS, get ready to bust out those foamies and lower volume boards and rip some turns! Over 400 CFS is game on. Based on our first year of surfing the wave, a flow rate of about 1100 CFS is the most prime, drop-everything-call-in-sick, level.</p>
+        <!-- Winter Notice -->
+        <div id="winter-notice" class="winter-notice" style="display: none;">
+            <p>The USGS gauge is down for the winter (Oct–Mar). Check the <a href="https://dwr.state.co.us/Tools/Stations/ARKSALCO?params=DISCHRG" target="_blank">CDWR gauge</a> for flow updates.</p>
         </div>
 
-        <!-- Legend Section -->
-        <div class="legend">
-            <h3>Scout Wave Flow Legend</h3>
+        <!-- Article Section -->
+        <div class="article">
+            <h2>Scout Wave - Know the Flow</h2>
+            <p><strong>November 16, 2023 • Mike Harvey</strong></p>
+            <p>Want to know when the Scout Wave is firing? Here’s the lowdown:</p>
+            <p><strong>Best Flows:</strong> 300–1500 CFS.</p>
             <ul>
-                <li><span class="color-indicator" style="background-color: #ff0000;"></span>250 CFS: Too low unless you are a sicko. Higher volume boards.</li>
-                <li><span class="color-indicator" style="background-color: #ff4500;"></span>300 CFS: Minimum Flow. Bring the foamies.</li>
-                <li><span class="color-indicator" style="background-color: #ffa500;"></span>350 CFS: It's getting good. Can ride most shortboards like the Wave Farmer.</li>
-                <li><span class="color-indicator" style="background-color: #ffff00;"></span>400-800 CFS: It's really good.</li>
-                <li><span class="color-indicator" style="background-color: #008000;"></span>800-1100 CFS: It's really really good.</li>
-                <li><span class="color-indicator" style="background-color: #0000ff;"></span>1100-1500 CFS: Still super fun, but swim is a little more intense.</li>
-                <li><span class="color-indicator" style="background-color: #000080;"></span>Over 1500 CFS: Too high, wave starts to foam out.</li>
+                <li><strong>250 CFS:</strong> Too low unless you’re a diehard. Bring a high-volume board.</li>
+                <li><strong>300–350 CFS:</strong> Foamies and shortboards start to work.</li>
+                <li><strong>400–800 CFS:</strong> Prime time. Grab your board and go.</li>
+                <li><strong>800–1100 CFS:</strong> Peak performance. Drop everything and surf.</li>
+                <li><strong>1100–1500 CFS:</strong> Still fun, but the swim gets gnarly.</li>
+                <li><strong>1500+ CFS:</strong> Too high. Wave gets washed out.</li>
             </ul>
+            <p><strong>Pro Tip:</strong> Check the <a href="https://dwr.state.co.us/Tools/Stations/ARKSALCO?params=DISCHRG" target="_blank">CDWR gauge</a> during winter (Oct–Mar) when the USGS gauge is down.</p>
+            <p>See you out there!</p>
         </div>
     </div>
 
@@ -220,8 +211,17 @@
 
     <script>
         const SITE_CODE = '07091200'; // USGS site code for the river
+        const WINTER_MONTHS = [10, 11, 12, 1, 2, 3]; // October to March
 
         async function fetchCFSData() {
+            const currentMonth = new Date().getMonth() + 1; // Months are 0-indexed in JavaScript
+            if (WINTER_MONTHS.includes(currentMonth)) {
+                // Show winter notice and hide gauge
+                document.getElementById('winter-notice').style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+                return;
+            }
+
             const url = `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${SITE_CODE}&parameterCd=00060`;
 
             try {
