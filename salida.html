@@ -157,92 +157,70 @@
 
     <script>
         const FLOW_SITE_CODE = '07091000'; // Arkansas River at Salida, CO
-        const TEMP_SITE_CODE = '07091000'; // Same site for temperature (if available)
+const TEMP_SITE_CODE = '07091000'; // Same site for temperature (if available)
 
-        async function fetchRiverData() {
-            const flowUrl = `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${FLOW_SITE_CODE}&parameterCd=00060&siteStatus=all`;
-            const tempUrl = `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${TEMP_SITE_CODE}&parameterCd=00010&siteStatus=all`;
+async function fetchRiverData() {
+    const flowUrl = `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${FLOW_SITE_CODE}&parameterCd=00060&siteStatus=all`;
+    const tempUrl = `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${TEMP_SITE_CODE}&parameterCd=00010&siteStatus=all`;
 
-            const [flowResponse, tempResponse] = await Promise.all([
-                fetch(flowUrl),
-                fetch(tempUrl)
-            ]);
+    try {
+        const [flowResponse, tempResponse] = await Promise.all([
+            fetch(flowUrl),
+            fetch(tempUrl)
+        ]);
 
-            const flowData = await flowResponse.json();
-            const tempData = await tempResponse.json();
+        const flowData = await flowResponse.json();
+        const tempData = await tempResponse.json();
 
-            const flowRate = parseFloat(flowData.value.timeSeries[0].values[0].value[0].value);
+        // Log the API responses for debugging
+        console.log('Flow Data:', flowData);
+        console.log('Temperature Data:', tempData);
+
+        // Check if flow data is available
+        if (!flowData.value || !flowData.value.timeSeries || !flowData.value.timeSeries[0] || !flowData.value.timeSeries[0].values) {
+            throw new Error('Flow data is not available or invalid.');
+        }
+
+        const flowRate = parseFloat(flowData.value.timeSeries[0].values[0].value[0].value);
+
+        // Check if temperature data is available
+        let tempFahrenheit = null;
+        if (tempData.value && tempData.value.timeSeries && tempData.value.timeSeries[0] && tempData.value.timeSeries[0].values) {
             const tempCelsius = parseFloat(tempData.value.timeSeries[0].values[0].value[0].value);
-            const tempFahrenheit = (tempCelsius * 9/5) + 32;
-
-            return { flowRate, tempFahrenheit };
+            tempFahrenheit = (tempCelsius * 9 / 5) + 32;
         }
 
-        function determineWaveCondition(flowRate) {
-            if (flowRate < 250) return { color: '#ff0000', message: 'Too low unless you are a sicko. Higher volume boards.' };
-            if (flowRate < 300) return { color: '#ff4500', message: 'Minimum Flow. Bring the foamies.' };
-            if (flowRate < 350) return { color: '#ffa500', message: 'It\'s getting good. Can ride most shortboards like the Wave Farmer.' };
-            if (flowRate < 800) return { color: '#ff8c00', message: 'It\'s really good.' };
-            if (flowRate < 1100) return { color: '#008000', message: 'It\'s really really good.' };
-            if (flowRate < 1500) return { color: '#00ff00', message: 'Still super fun, but swim is a little more intense.' };
-            return { color: '#0000ff', message: 'Too high, wave starts to foam out.' };
+        return { flowRate, tempFahrenheit };
+    } catch (error) {
+        console.error('Error fetching river data:', error);
+        throw error; // Re-throw the error to handle it in the calling function
+    }
+}
+
+async function updateConditions() {
+    try {
+        const { flowRate, tempFahrenheit } = await fetchRiverData();
+        updateFlowGauge(flowRate);
+
+        // Update temperature gauge only if temperature data is available
+        if (tempFahrenheit !== null) {
+            updateTempGauge(tempFahrenheit);
+        } else {
+            document.getElementById('temp-gauge').style.display = 'none'; // Hide temperature gauge if no data
+            document.getElementById('temp-description').textContent = 'Temperature data not available.';
         }
 
-        function determineTemperature(temp) {
-            if (temp < 50) return { color: '#0000ff', message: 'Very Cold' };
-            if (temp < 60) return { color: '#00ffff', message: 'Cold' };
-            if (temp < 70) return { color: '#00ff00', message: 'Cool' };
-            if (temp < 80) return { color: '#ffff00', message: 'Warm' };
-            return { color: '#ff0000', message: 'Hot' };
-        }
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('last-updated').textContent = `Last Updated: ${new Date().toLocaleTimeString()}`;
+    } catch (error) {
+        console.error('Error updating conditions:', error);
+        document.getElementById('loading').textContent = 'Error loading river data. Please try again later.';
+    }
+}
 
-        async function updateConditions() {
-            try {
-                const { flowRate, tempFahrenheit } = await fetchRiverData();
-                updateFlowGauge(flowRate);
-                updateTempGauge(tempFahrenheit);
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('last-updated').textContent = `Last Updated: ${new Date().toLocaleTimeString()}`;
-            } catch (error) {
-                console.error('Error fetching river data:', error);
-                document.getElementById('loading').textContent = 'Error loading river data. Please try again later.';
-            }
-        }
-
-        function updateFlowGauge(flowRate) {
-            const condition = determineWaveCondition(flowRate);
-            const gaugeFill = document.getElementById('flow-gauge-fill');
-            const gaugeValue = document.getElementById('flow-gauge-value');
-            const flowRateElement = document.getElementById('flow-rate');
-
-            const maxHeight = 1500; // Maximum flow rate for the gauge
-            const height = Math.min((flowRate / maxHeight) * 100, 100);
-
-            gaugeFill.style.height = `${height}%`;
-            gaugeFill.style.backgroundColor = condition.color;
-            gaugeValue.textContent = flowRate;
-            flowRateElement.innerHTML = `Current flow rate: ${flowRate} cfs<br>${condition.message}`;
-        }
-
-        function updateTempGauge(temp) {
-            const safety = determineTemperature(temp);
-            const gaugeFill = document.getElementById('temp-gauge-fill');
-            const gaugeValue = document.getElementById('temp-gauge-value');
-            const descriptionElement = document.getElementById('temp-description');
-
-            const minTemp = 32; // Freezing point of water
-            const maxTemp = 100; // Very hot temperature
-
-            const height = Math.min((temp - minTemp) / (maxTemp - minTemp) * 100, 100);
-            gaugeFill.style.height = `${height}%`;
-            gaugeFill.style.backgroundColor = safety.color;
-            gaugeValue.textContent = `${temp}°F`;
-            descriptionElement.textContent = `Water Temperature: ${safety.message}`;
-        }
-
-        // Call update function on page load and every 15 minutes
-        updateConditions();
-        setInterval(updateConditions, 900000); // 15 minutes
+// Call update function on page load and every 15 minutes
+updateConditions();
+setInterval(updateConditions, 900000); // 15 minutes
     </script>
 </body>
 </html>
